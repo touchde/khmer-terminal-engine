@@ -136,7 +136,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           target/release/kte-term --snapshot snapshots/live-bash.png --rows 4 --cols 50 \
-            --command 'PS1="bash$ " bash --norc -i' --type 'echo សួស្តី ពិភពលោក\nខ្ញុំស្រឡាញ់' --wait-ms 4000
+            --command 'PS1="bash$ " bash --norc -i' --type 'echo សួស្តី ពិភពលោក\nខ្ញុំស្រឡាញ់' --wait-ms 15000
           test -s snapshots/live-bash.png
       - uses: actions/upload-artifact@v7
         with:

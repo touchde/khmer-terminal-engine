@@ -22,6 +22,10 @@ pub struct Frame {
     pub width: u32,
     pub height: u32,
     pub pixels: Vec<u32>,
+    /// While drawing glyphs: a rectangle `(x0, y0, x1, y1)` (the block
+    /// cursor) inside which glyph pixels use the second color instead, so
+    /// text and marks over the cursor stay visible.
+    inverse: Option<((i32, i32, i32, i32), u32)>,
 }
 
 impl Frame {
@@ -30,6 +34,7 @@ impl Frame {
             width,
             height,
             pixels: vec![0; (width * height) as usize],
+            inverse: None,
         }
     }
 
@@ -59,6 +64,12 @@ impl Frame {
                     continue;
                 }
                 let i = (py as u32 * self.width + px as u32) as usize;
+                let color = match self.inverse {
+                    Some(((x0, y0, x1, y1), alt)) if px >= x0 && px < x1 && py >= y0 && py < y1 => {
+                        alt
+                    }
+                    _ => color,
+                };
                 self.pixels[i] = blend(self.pixels[i], color, a);
             }
         }
@@ -309,6 +320,7 @@ impl Renderer {
             let w = cursor_span.len() as i32 * cw;
             if overlay.focused {
                 frame.fill(x, y, w, ch, self.theme.cursor);
+                frame.inverse = Some(((x, y, x + w, y + ch), self.theme.background));
             } else {
                 let c = self.theme.cursor;
                 frame.fill(x, y, w, 1, c);
@@ -340,19 +352,13 @@ impl Renderer {
                     text.push_str(&next.text);
                     width += next.width as usize;
                 }
-                let (mut fg, _) = self.theme.cell_colors(&cell.attrs);
-                let on_cursor = show_cursor
-                    && overlay.focused
-                    && row == cursor.0
-                    && (start..start + width).contains(&cursor_span.start);
-                if on_cursor {
-                    fg = self.theme.background;
-                }
+                let (fg, _) = self.theme.cell_colors(&cell.attrs);
                 let x = (pad + start as i32 * cw) as f32;
                 self.draw_cluster(frame, &text, width.max(1), x, baseline, fg);
                 col = start + width.max(1);
             }
         }
+        frame.inverse = None;
     }
 
     fn draw_cluster(

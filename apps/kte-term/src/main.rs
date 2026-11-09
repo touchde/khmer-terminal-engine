@@ -46,7 +46,7 @@ OPTIONS:
     --text <TEXT>         Text for --snapshot (escape sequences allowed as \\x1b)
     --command <CMD>       With --snapshot: run CMD in a real pty and render its output
     --type <TEXT>         With --snapshot: also type TEXT into it (\\n = Enter)
-    --wait-ms <MS>        With --command/--type: how long to run [default: 1500]
+    --wait-ms <MS>        With --command/--type: longest time to run [default: 1500]
     -h, --help            Show this help
 
 ENVIRONMENT:
@@ -148,29 +148,44 @@ fn run_live(o: &Options, term: &mut Terminal) -> Result<(), String> {
     let mut pty = pty::Pty::spawn(o.rows, o.cols, o.command.as_deref(), move |b| {
         let _ = tx.send(b.to_vec());
     })?;
+    // Type once the prompt has been printed and output has paused; finish
+    // once output has settled after typing. `wait_ms` caps the whole run.
+    const QUIET_BEFORE_TYPING: Duration = Duration::from_millis(400);
+    const QUIET_AFTER_TYPING: Duration = Duration::from_millis(1000);
     let start = Instant::now();
     let deadline = start + Duration::from_millis(o.wait_ms);
     let mut typed = o
         .typed
         .clone()
         .map(|t| t.replace("\\n", "\r").replace('\n', "\r"));
+    let mut seen_output = false;
+    let mut typing_done = typed.is_none();
+    let mut last_output = start;
     loop {
-        // Type once the shell has had time to print its prompt.
-        if start.elapsed() > Duration::from_millis(o.wait_ms / 3) {
-            if let Some(t) = typed.take() {
-                for c in t.chars() {
-                    pty.write(c.encode_utf8(&mut [0; 4]).as_bytes());
-                    std::thread::sleep(Duration::from_millis(5));
-                }
-            }
-        }
         let now = Instant::now();
         if now >= deadline {
             break;
         }
+        let quiet = now - last_output;
+        if !typing_done
+            && (seen_output && quiet >= QUIET_BEFORE_TYPING || now - start > (deadline - start) / 2)
+        {
+            if let Some(t) = typed.take() {
+                for c in t.chars() {
+                    pty.write(c.encode_utf8(&mut [0; 4]).as_bytes());
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+            }
+            typing_done = true;
+            last_output = Instant::now();
+        } else if typing_done && o.typed.is_some() && quiet >= QUIET_AFTER_TYPING {
+            break;
+        }
         match rx.recv_timeout((deadline - now).min(Duration::from_millis(50))) {
-            Ok(bytes) if bytes.is_empty() && typed.is_none() => break,
+            Ok(bytes) if bytes.is_empty() => break,
             Ok(bytes) => {
+                seen_output = true;
+                last_output = Instant::now();
                 term.feed(&bytes);
                 pty.write(&term.take_responses());
             }
