@@ -212,8 +212,10 @@ pub struct Sizing {
     pub font_px: f32,
     /// Row height as a multiple of the Latin font's line height.
     pub line_height: f32,
-    /// How much of its cells a typical Khmer consonant fills (0.5–1.0).
-    pub khmer_fill: f32,
+    /// Height of a Khmer consonant's body relative to a Latin capital
+    /// (Legacy and Compact). Matching heights keeps Khmer and Latin balanced
+    /// whatever fonts the host provides.
+    pub khmer_size: f32,
 }
 
 impl Renderer {
@@ -251,9 +253,23 @@ impl Renderer {
         let extra = self.cell_height as f32 - (latin.ascender + latin.descender) * scale;
         self.baseline = (extra / 2.0 + latin.ascender * scale).round();
         self.latin_px = sizing.font_px;
-        self.khmer_px =
-            self.khmer
-                .font_size_for_cell(self.cell_width as f32, self.model, sizing.khmer_fill);
+        let latin_cap = self.latin.ink_height('H').map(|h| h * scale);
+        let khmer_ka = self.khmer_face.ink_height('ក');
+        self.khmer_px = match (self.model, latin_cap, khmer_ka) {
+            // The Wide model's layout depends on width: a consonant spans 2 cells.
+            (CellModel::Wide, ..) | (_, None, _) | (_, _, None) => {
+                let fill = if self.model == CellModel::Wide {
+                    1.0
+                } else {
+                    1.2
+                };
+                self.khmer
+                    .font_size_for_cell(self.cell_width as f32, self.model, fill)
+            }
+            (_, Some(cap_px), Some(ka_units)) => {
+                sizing.khmer_size * cap_px * self.khmer_face.units_per_em / ka_units
+            }
+        };
         self.glyphs.clear();
         self.shaped.clear();
     }

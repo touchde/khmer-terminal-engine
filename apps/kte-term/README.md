@@ -54,7 +54,7 @@ bash needs no setting.
 --model <MODEL>       legacy (default), wide, compact, legacy-glibc, legacy-apple
 --font-size <PX>      Latin font size in pixels [default: 15]
 --line-height <X>     Row height as a multiple of the font's line height [default: 1.7]
---khmer-fill <X>      Khmer size in cells per consonant, 0.5-2.0 [default: 1.2 legacy/compact, 1.0 wide]
+--khmer-size <X>      Khmer consonant height relative to Latin capitals [default: 0.93]
 --rows <N>, --cols <N>
 --snapshot <FILE>     Render to a PNG instead of opening a window
 --text <TEXT>         Text for --snapshot
@@ -62,7 +62,21 @@ bash needs no setting.
 --type <TEXT>         With --snapshot: type TEXT into it (\n = Enter)
 ```
 
-Fonts are found automatically: Menlo / DejaVu Sans Mono / Cascadia Mono for Latin; Noto Sans Khmer, Khmer OS, Khmer UI, Khmer Sangam MN or Leelawadee UI for Khmer, in that order of preference. Override them with `KTE_FONT` and `KTE_KHMER_FONT`.
+### Fonts
+
+kte-term uses the **host's default fonts**, so it looks like the rest of your system:
+
+| OS | Latin | Khmer |
+|----|-------|-------|
+| macOS | SF Mono (Terminal.app's default) | Khmer Sangam MN (macOS's Khmer font) |
+| Windows | Cascadia Mono, or Consolas | Leelawadee UI, or Khmer UI |
+| Linux | fontconfig's `monospace` | fontconfig's choice for Khmer (`:lang=km`) |
+
+Khmer is scaled so its consonants match the height of Latin capitals in whichever fonts are used. To choose your own fonts, set `KTE_FONT` and `KTE_KHMER_FONT` to font file paths; for example Noto Sans Khmer fits the width spec closely:
+
+```sh
+KTE_KHMER_FONT=~/Library/Fonts/NotoSansKhmer-Regular.ttf kte-term
+```
 
 ## Keys
 

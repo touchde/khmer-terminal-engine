@@ -31,8 +31,8 @@ USAGE:
 OPTIONS:
     --font-size <PX>      Latin font size in pixels [default: 15]
     --line-height <X>     Row height as a multiple of the font's line height [default: 1.7]
-    --khmer-fill <X>      Khmer size: how many of its cells a Khmer consonant spans,
-                          0.5-2.0 [default: 1.2 for legacy and compact, 1.0 for wide]
+    --khmer-size <X>      Height of Khmer consonants relative to Latin capitals [default: 0.93]
+                          (the Wide model sizes Khmer to its cells instead)
     --model <MODEL>       Khmer cell model [default: legacy]
                             legacy   match the system wcwidth() so today's shells and
                                      editors line up (glibc rules on Linux, Apple's on macOS)
@@ -76,7 +76,7 @@ fn parse_args() -> Result<Options, String> {
         sizing: Sizing {
             font_px: 15.0,
             line_height: 1.7,
-            khmer_fill: 0.0, // 0 = default for the model
+            khmer_size: 0.93,
         },
         model: CellModel::Legacy(LegacyWidths::native()),
         rows: 24,
@@ -102,7 +102,7 @@ fn parse_args() -> Result<Options, String> {
             }
             "--font-size" => o.sizing.font_px = num(value(&arg)?, &arg)?,
             "--line-height" => o.sizing.line_height = num(value(&arg)?, &arg)?,
-            "--khmer-fill" => o.sizing.khmer_fill = num(value(&arg)?, &arg)?.clamp(0.5, 2.0),
+            "--khmer-size" => o.sizing.khmer_size = num(value(&arg)?, &arg)?.clamp(0.5, 2.0),
             "--model" => {
                 o.model = match value(&arg)?.as_str() {
                     "wide" => CellModel::Wide,
@@ -123,12 +123,6 @@ fn parse_args() -> Result<Options, String> {
             "--wait-ms" => o.wait_ms = num(value(&arg)?, &arg)? as u64,
             other => return Err(format!("unknown option {other}; see --help")),
         }
-    }
-    if o.sizing.khmer_fill == 0.0 {
-        // Words may take the room they need (see render.rs), so Khmer can be
-        // drawn at a size that balances with Latin. Wide already gives a
-        // consonant 2 cells.
-        o.sizing.khmer_fill = if o.model == CellModel::Wide { 1.0 } else { 1.2 };
     }
     Ok(o)
 }

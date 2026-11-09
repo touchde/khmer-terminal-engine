@@ -13,56 +13,86 @@ pub struct FontSource {
     pub index: u32,
 }
 
-/// First existing file from a list of candidates. `KTE_FONT` / `KTE_KHMER_FONT`
-/// override the search.
-fn find(env: &str, candidates: &[&str]) -> Option<FontSource> {
-    let home = std::env::var("HOME").unwrap_or_default();
-    std::env::var(env)
-        .ok()
-        .into_iter()
-        .chain(candidates.iter().map(|c| c.replace('~', &home)))
+/// Fonts are the host's defaults, so kte-term looks like the rest of the
+/// system (and like the same text in VS Code or Terminal.app):
+///
+/// - macOS: SF Mono (Terminal.app's default) and Khmer Sangam MN (the font
+///   macOS itself uses for Khmer).
+/// - Windows: Cascadia Mono (Windows Terminal's default) or Consolas, and
+///   Leelawadee UI or Khmer UI (Windows' Khmer fallback).
+/// - Linux and other Unix: whatever fontconfig resolves `monospace` and
+///   Khmer (`:lang=km`) to, honoring the user's fontconfig settings.
+///
+/// `KTE_FONT` / `KTE_KHMER_FONT` override the choice.
+fn find(env: &str, fc_pattern: &str, candidates: &[&str]) -> Option<FontSource> {
+    if let Some(path) = std::env::var_os(env)
+        .map(PathBuf::from)
+        .filter(|p| p.is_file())
+    {
+        return Some(FontSource { path, index: 0 });
+    }
+    if cfg!(all(unix, not(target_vendor = "apple"))) {
+        if let Some(found) = fc_match(fc_pattern) {
+            return Some(found);
+        }
+    }
+    candidates
+        .iter()
         .map(PathBuf::from)
         .find(|p| p.is_file())
         .map(|path| FontSource { path, index: 0 })
 }
 
-/// Monospace font for Latin and other non-Khmer text.
+/// Asks fontconfig which font file it would use for `pattern`.
+fn fc_match(pattern: &str) -> Option<FontSource> {
+    let out = std::process::Command::new("fc-match")
+        .args(["--format=%{file}\n%{index}", pattern])
+        .output()
+        .ok()?;
+    let text = String::from_utf8(out.stdout).ok()?;
+    let mut lines = text.lines();
+    let path = PathBuf::from(lines.next()?);
+    let index = lines
+        .next()
+        .and_then(|i| i.trim().parse().ok())
+        .unwrap_or(0);
+    path.is_file().then_some(FontSource { path, index })
+}
+
+/// The host's default monospace font.
 pub fn find_latin() -> Option<FontSource> {
     find(
         "KTE_FONT",
+        "monospace",
         &[
             // macOS
-            "/System/Library/Fonts/Menlo.ttc",
             "/System/Library/Fonts/SFNSMono.ttf",
-            // Linux
-            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-            "/usr/share/fonts/TTF/DejaVuSansMono.ttf",
-            "/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+            "/System/Library/Fonts/Menlo.ttc",
             // Windows
             "C:\\Windows\\Fonts\\CascadiaMono.ttf",
             "C:\\Windows\\Fonts\\consola.ttf",
+            // Unix without fontconfig
+            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+            "/usr/share/fonts/TTF/DejaVuSansMono.ttf",
         ],
     )
 }
 
-/// Khmer font. Noto Sans Khmer and Khmer OS fit the KTE Width Spec best
-/// (Research 0001 and 0002); the platform fonts are fallbacks.
+/// The host's default Khmer font.
 pub fn find_khmer() -> Option<FontSource> {
     find(
         "KTE_KHMER_FONT",
+        ":lang=km",
         &[
-            "~/Library/Fonts/NotoSansKhmer-Regular.ttf",
-            "/Library/Fonts/NotoSansKhmer-Regular.ttf",
-            "/usr/share/fonts/truetype/noto/NotoSansKhmer-Regular.ttf",
-            "/usr/share/fonts/noto/NotoSansKhmer-Regular.ttf",
-            "~/Library/Fonts/KhmerOSsys.ttf",
-            "/usr/share/fonts/truetype/khmeros/KhmerOSsys.ttf",
-            "/usr/share/fonts/truetype/khmeros/KhmerOS.ttf",
-            "C:\\Windows\\Fonts\\NotoSansKhmer-Regular.ttf",
-            "C:\\Windows\\Fonts\\KhmerUI.ttf",
+            // macOS
             "/System/Library/Fonts/Supplemental/Khmer Sangam MN.ttf",
+            "/System/Library/Fonts/Supplemental/Khmer MN.ttc",
+            // Windows
             "C:\\Windows\\Fonts\\LeelawUI.ttf",
+            "C:\\Windows\\Fonts\\KhmerUI.ttf",
+            // Unix without fontconfig
+            "/usr/share/fonts/truetype/noto/NotoSansKhmer-Regular.ttf",
+            "/usr/share/fonts/truetype/khmeros/KhmerOSsys.ttf",
         ],
     )
 }
@@ -126,6 +156,13 @@ impl Face {
             descender,
             line_gap,
         }
+    }
+
+    /// Height of the ink of `c`'s glyph, in font units.
+    pub fn ink_height(&self, c: char) -> Option<f32> {
+        let glyph = self.font.charmap().map_unicode(c)?;
+        let extents = self.font.outline_glyphs().get(glyph)?.extents().ok()?;
+        (extents.height > 0.0).then_some(extents.height)
     }
 
     pub fn has_char(&self, c: char) -> bool {
