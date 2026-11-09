@@ -8,8 +8,9 @@ license.workspace = true
 repository.workspace = true
 publish = false
 
-[dependencies]
-rustybuzz = "0.20"
-
 [lints]
 workspace = true
+
+[dependencies]
+harfrust = "0.15"
+read-fonts = "0.46"

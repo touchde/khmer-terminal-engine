@@ -7,7 +7,7 @@
 
 ## Method
 
-Every Unicode Khmer font installed on the development machine was shaped with `rustybuzz`, a Rust port of HarfBuzz. That was 160 fonts, 9 of them common system/UI fonts. Advances are expressed in **consonant units**: the median advance of a Khmer consonant in the same font.
+Every Unicode Khmer font installed on the development machine was shaped with `harfrust`, the HarfBuzz project's Rust port. That was 160 fonts, 9 of them common system/UI fonts. Advances are expressed in **consonant units**: the median advance of a Khmer consonant in the same font.
 
 1. Each base character, spacing sign, non-spacing sign and subscript was measured on its own.
 2. Candidate width rules were evaluated against 188 syllables from the test corpus and common sentences. For each syllable, *fit = measured advance ÷ rule width*. A terminal can scale its Khmer font once, globally, so what matters is how much the fit **varies** between syllables. That variation shows up on screen as squeezed syllables or gaps.

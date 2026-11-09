@@ -2,8 +2,8 @@
 //!
 //! Usage: `cargo run -p kte-measure --release -- <font file or directory>...`
 //!
-//! For every font that covers the Khmer block, text is shaped with rustybuzz
-//! (a HarfBuzz port) and advances are expressed in **consonant units**: the
+//! For every font that covers the Khmer block, text is shaped with harfrust
+//! (the HarfBuzz project's Rust port) and advances are expressed in **consonant units**: the
 //! median advance of the 35 Khmer consonants shaped alone in that font.
 //!
 //! The report (Markdown, on stdout) has three parts:
@@ -14,6 +14,8 @@
 //!    syllable by syllable.
 
 use std::collections::BTreeMap;
+
+use read_fonts::types::NameId;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -89,8 +91,7 @@ const SAMPLE: &[&str] = &[
 
 struct Font {
     name: String,
-    data: Vec<u8>,
-    index: u32,
+    font: harfrust::Font,
 }
 
 struct Metrics {
@@ -153,33 +154,29 @@ fn collect_fonts(path: &Path, out: &mut Vec<Font>) {
         return;
     }
     let Ok(data) = fs::read(path) else { return };
-    let count = rustybuzz::ttf_parser::fonts_in_collection(&data).unwrap_or(1);
-    for index in 0..count {
-        let name = font_name(&data, index).unwrap_or_else(|| {
+    // A collection (.ttc) holds several fonts; `Font::new` returns `None` past the last one.
+    for index in 0.. {
+        let Some(font) = harfrust::Font::new(data.clone(), index) else {
+            break;
+        };
+        let name = font_name(&font).unwrap_or_else(|| {
             path.file_stem()
                 .map(|s| s.to_string_lossy().into_owned())
                 .unwrap_or_default()
         });
         out.push(Font {
             name: name.trim().to_owned(),
-            data: data.clone(),
-            index,
+            font,
         });
     }
 }
 
-fn font_name(data: &[u8], index: u32) -> Option<String> {
-    let face = rustybuzz::ttf_parser::Face::parse(data, index).ok()?;
-    let names = face.names();
-    // Prefer the full name (4), then the family name (1).
-    [4u16, 1]
-        .iter()
-        .find_map(|id| {
-            names
-                .into_iter()
-                .find(|n| n.name_id == *id && n.is_unicode())
-        })
-        .and_then(|n| n.to_string())
+fn font_name(font: &harfrust::Font) -> Option<String> {
+    let names = font.names();
+    [NameId::FULL_NAME, NameId::FAMILY_NAME]
+        .into_iter()
+        .find_map(|id| names.get(id)?.english_or_first())
+        .map(|n| n.name().chars().collect())
 }
 
 /// Splits Khmer text into syllables: a new syllable starts at a consonant,
@@ -209,7 +206,8 @@ fn syllables() -> Vec<String> {
 }
 
 fn measure(font: &Font, syllables: &[String]) -> Option<Metrics> {
-    let face = rustybuzz::Face::from_slice(&font.data, font.index)?;
+    let shaper = harfrust::ShaperFont::new(&font.font);
+    let charmap = font.font.charmap();
 
     // Only Unicode-encoded Khmer fonts: legacy fonts map Khmer glyphs onto Latin codepoints.
     let required = bases()
@@ -217,50 +215,61 @@ fn measure(font: &Font, syllables: &[String]) -> Option<Metrics> {
         .chain(NON_SPACING.iter().copied());
     if required
         .chain([COENG])
-        .any(|c| face.glyph_index(c).is_none())
+        .any(|c| charmap.map_unicode(c).is_none())
     {
         return None;
     }
 
-    let mut consonant_advances: Vec<f32> = consonants()
-        .map(|c| advance(&face, &c.to_string()))
-        .collect();
+    let adv = |s: &str| advance(&shaper, s);
+    let mut consonant_advances = consonants()
+        .map(|c| adv(&c.to_string()))
+        .collect::<Option<Vec<f32>>>()?;
     let unit = percentile(&mut consonant_advances, 0.5);
     if unit <= 0.0 {
         return None;
     }
 
-    let base = advance(&face, &KA.to_string());
-    let extra = |s: &str| (advance(&face, s) - base) / unit;
+    let base = adv(&KA.to_string())?;
+    let extra = |s: String| Some((adv(&s)? - base) / unit);
 
     Some(Metrics {
         name: font.name.clone(),
         base: bases()
-            .map(|c| advance(&face, &c.to_string()) / unit)
-            .collect(),
-        spacing: SPACING.iter().map(|v| extra(&format!("{KA}{v}"))).collect(),
+            .map(|c| Some(adv(&c.to_string())? / unit))
+            .collect::<Option<_>>()?,
+        spacing: SPACING
+            .iter()
+            .map(|v| extra(format!("{KA}{v}")))
+            .collect::<Option<_>>()?,
         non_spacing: NON_SPACING
             .iter()
-            .map(|v| extra(&format!("{KA}{v}")))
-            .collect(),
+            .map(|v| extra(format!("{KA}{v}")))
+            .collect::<Option<_>>()?,
         coeng: consonants()
-            .map(|c| extra(&format!("{KA}{COENG}{c}")))
-            .collect(),
-        syllables: syllables.iter().map(|s| advance(&face, s) / unit).collect(),
+            .map(|c| extra(format!("{KA}{COENG}{c}")))
+            .collect::<Option<_>>()?,
+        syllables: syllables
+            .iter()
+            .map(|s| Some(adv(s)? / unit))
+            .collect::<Option<_>>()?,
     })
 }
 
-fn advance(face: &rustybuzz::Face, text: &str) -> f32 {
-    let mut buffer = rustybuzz::UnicodeBuffer::new();
+/// Total shaped advance of `text`, in font units. `None` if shaping fails
+/// (e.g. on a malformed font).
+fn advance(shaper: &harfrust::ShaperFont, text: &str) -> Option<f32> {
+    let mut buffer = harfrust::Buffer::new();
     buffer.push_str(text);
-    buffer.set_direction(rustybuzz::Direction::LeftToRight);
-    buffer.set_script(rustybuzz::script::KHMER);
-    let shaped = rustybuzz::shape(face, &[], buffer);
-    shaped
-        .glyph_positions()
-        .iter()
-        .map(|p| p.x_advance as f32)
-        .sum()
+    buffer.set_direction(harfrust::Direction::LeftToRight);
+    buffer.set_script(Some(harfrust::Script::KHMER));
+    harfrust::shape(shaper, &mut buffer, harfrust::ShapeOptions::new()).ok()?;
+    Some(
+        buffer
+            .glyph_positions()
+            .iter()
+            .map(|p| p.x_advance as f32)
+            .sum(),
+    )
 }
 
 /// Linear-interpolated percentile (`q` in 0..=1). Sorts `values`.

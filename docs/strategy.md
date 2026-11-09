@@ -81,7 +81,7 @@ The terminal shapes the whole syllable with HarfBuzz and fits the result into th
 | VT/ANSI parser | `vte` crate, or our own |
 | Grid | Cells hold grapheme clusters; a cluster can span N cells (per the spec) |
 | Segmentation | `unicode-segmentation` + Khmer syllable rules (`kte-unicode`) |
-| Shaping | HarfBuzz (`harfbuzz_rs`) or pure-Rust `rustybuzz`; shape whole runs, then map clusters to cells (`kte-shaper`, `kte-cell`) |
+| Shaping | `harfrust` (the HarfBuzz project's Rust port; `rustybuzz` is unmaintained), or C HarfBuzz via FFI; shape whole runs, then map clusters to cells (`kte-shaper`, `kte-cell`) |
 | Fonts | Fallback chain: Latin monospace + Noto Sans Khmer / Kantumruy Pro (true monospace Khmer fonts barely exist) |
 | Rendering | `wgpu` with a glyph atlas keyed by **shaped cluster**, not codepoint |
 | Window | `winit` |
