@@ -46,6 +46,8 @@ OPTIONS:
     --text <TEXT>         Text for --snapshot (escape sequences allowed as \\x1b)
     --command <CMD>       With --snapshot: run CMD in a real pty and render its output
     --type <TEXT>         With --snapshot: also type TEXT into it (\\n = Enter)
+    --dump                With --snapshot: also print each row's cells (text and
+                          width, with codepoints) to stdout, for debugging
     --wait-ms <MS>        With --command/--type: longest time to run [default: 1500]
     -h, --help            Show this help
 
@@ -65,6 +67,7 @@ pub(crate) struct Options {
     pub(crate) command: Option<String>,
     pub(crate) typed: Option<String>,
     pub(crate) wait_ms: u64,
+    pub(crate) dump: bool,
 }
 
 fn parse_args() -> Result<Options, String> {
@@ -82,6 +85,7 @@ fn parse_args() -> Result<Options, String> {
         command: None,
         typed: None,
         wait_ms: 1500,
+        dump: false,
     };
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -114,6 +118,7 @@ fn parse_args() -> Result<Options, String> {
             "--text" => o.text = Some(value(&arg)?),
             "--command" => o.command = Some(value(&arg)?),
             "--type" => o.typed = Some(value(&arg)?),
+            "--dump" => o.dump = true,
             "--wait-ms" => o.wait_ms = num(value(&arg)?, &arg)? as u64,
             other => return Err(format!("unknown option {other}; see --help")),
         }
@@ -205,6 +210,9 @@ fn snapshot(o: &Options, path: &str) -> Result<(), String> {
         let text = snapshot_text(o)?;
         term.feed(text.replace('\n', "\r\n").as_bytes());
     }
+    if o.dump {
+        dump(&term);
+    }
     let (w, h) = renderer.window_size(o.rows, o.cols);
     let mut frame = Frame::new(w, h);
     renderer.render(
@@ -216,6 +224,28 @@ fn snapshot(o: &Options, path: &str) -> Result<(), String> {
         },
     );
     save_png(&frame, path)
+}
+
+/// Prints every non-blank cell: column, width, text and codepoints.
+fn dump(term: &Terminal) {
+    for row in 0..term.rows() {
+        let cells: Vec<String> = (0..term.cols())
+            .filter_map(|col| {
+                let cell = term.cell(row, col);
+                (!cell.text.is_empty()).then(|| {
+                    let cps: Vec<String> = cell
+                        .text
+                        .chars()
+                        .map(|c| format!("{:04X}", c as u32))
+                        .collect();
+                    format!("{col}:{}:{}[{}]", cell.width, cell.text, cps.join(" "))
+                })
+            })
+            .collect();
+        if !cells.is_empty() {
+            println!("row {row}: {}", cells.join("  "));
+        }
+    }
 }
 
 fn snapshot_text(o: &Options) -> Result<String, String> {
