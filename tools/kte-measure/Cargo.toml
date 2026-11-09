@@ -1,0 +1,15 @@
+[package]
+name = "kte-measure"
+description = "Measures shaped Khmer advances in real fonts to inform the KTE Width Spec."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+rustybuzz = "0.20"
+
+[lints]
+workspace = true

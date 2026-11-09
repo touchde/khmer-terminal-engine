@@ -12,3 +12,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Strategy document, KTE Width Spec draft, initial ADRs, upstream tracker.
 - Community files: license, contributing guide, code of conduct, security policy, governance.
 - CI for Linux, macOS and Windows.
+- `tools/kte-measure`: measures shaped Khmer advances across fonts.
+- Research 0001: Khmer advance measurements across 160 fonts.

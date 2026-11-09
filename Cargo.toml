@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/*", "apps/kte-term"]
+members = ["crates/*", "apps/kte-term", "tools/*"]
 
 [workspace.package]
 version = "0.0.0"
