@@ -7,7 +7,7 @@
 | **Editors** | Den TOUCH |
 | **Discussion** | Issues labelled [`spec`](https://github.com/touchde/khmer-terminal-engine/labels/spec) |
 | **Reference implementation** | [`kte-unicode`](../crates/kte-unicode) |
-| **Evidence** | [Research 0001](../docs/research/0001-khmer-advance-measurements.md), [ADR 0004](../docs/adr/0004-half-consonant-cell-model.md) |
+| **Evidence** | [Research 0001](../docs/research/0001-khmer-advance-measurements.md), [Research 0002](../docs/research/0002-windows-and-linux-fonts.md), [ADR 0004](../docs/adr/0004-half-consonant-cell-model.md) |
 
 ## 1. Purpose
 

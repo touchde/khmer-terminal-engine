@@ -22,3 +22,4 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `kte-core` facade; `kte-capi` C ABI with `include/kte.h`, C demo and WebAssembly smoke test.
 - `tools/spec-ref`: independent Python implementation that generates corpus expectations.
 - Test corpus expanded to 34 cases.
+- Research 0002: the spec table fits Linux default fonts (98–100%) and Windows' Leelawadee UI (80–86%); `Measure fonts` workflow.
