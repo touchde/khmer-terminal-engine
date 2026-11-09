@@ -8,8 +8,30 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "សួ",
+        "ស្តី",
+        " ",
+        "ពិ",
+        "ភ",
+        "ព",
+        "លោ",
+        "ក",
+        "!"
+      ],
+      "half_units": [
+        3,
+        3,
+        null,
+        2,
+        2,
+        2,
+        5,
+        2,
+        null
+      ],
+      "wide": 21,
+      "compact": 13
     },
     "note": "Greeting from the project brief"
   },
@@ -22,8 +44,20 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "ភា",
+        "សា",
+        "ខ្មែ",
+        "រ"
+      ],
+      "half_units": [
+        3,
+        4,
+        3,
+        1
+      ],
+      "wide": 11,
+      "compact": 7
     },
     "note": "Contains coeng + MO"
   },
@@ -36,8 +70,40 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "ខ្ញុំ",
+        "ស្រ",
+        "ឡា",
+        "ញ់",
+        "កា",
+        "រ",
+        "ស",
+        "រ",
+        "សេ",
+        "រ",
+        "ក",
+        "ម្ម",
+        "វិ",
+        "ធី"
+      ],
+      "half_units": [
+        2,
+        4,
+        4,
+        3,
+        3,
+        1,
+        3,
+        1,
+        4,
+        1,
+        2,
+        2,
+        1,
+        2
+      ],
+      "wide": 33,
+      "compact": 20
     },
     "note": "Several subscripts and coeng-RO"
   },
@@ -50,8 +116,42 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "កា",
+        "រ",
+        "អ",
+        "ភិ",
+        "វ",
+        "ឌ្ឍ",
+        "ក",
+        "ម្ម",
+        "វិ",
+        "ធី",
+        "ជា",
+        "ភា",
+        "សា",
+        "ខ្មែ",
+        "រ"
+      ],
+      "half_units": [
+        3,
+        1,
+        2,
+        2,
+        1,
+        3,
+        2,
+        2,
+        1,
+        2,
+        3,
+        3,
+        4,
+        3,
+        1
+      ],
+      "wide": 33,
+      "compact": 21
     },
     "note": "Contains the ឍ subscript cluster"
   },
@@ -64,8 +164,18 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "ក្តី",
+        "ស្រ",
+        "មៃ"
+      ],
+      "half_units": [
+        2,
+        4,
+        3
+      ],
+      "wide": 9,
+      "compact": 5
     },
     "note": "Coeng-TA and pre-base vowel ៃ"
   },
@@ -78,8 +188,22 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "ស",
+        "ក្តា",
+        "នុ",
+        "ព",
+        "ល"
+      ],
+      "half_units": [
+        3,
+        3,
+        2,
+        2,
+        3
+      ],
+      "wide": 13,
+      "compact": 8
     },
     "note": "Coeng-TA followed by spacing vowel ា"
   },
@@ -92,8 +216,14 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "ស្ត"
+      ],
+      "half_units": [
+        3
+      ],
+      "wide": 3,
+      "compact": 2
     },
     "note": "Subscript consonant"
   },
@@ -106,8 +236,14 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "ក្រ"
+      ],
+      "half_units": [
+        3
+      ],
+      "wide": 3,
+      "compact": 2
     },
     "note": "Coeng-RO, drawn before the base"
   },
@@ -120,8 +256,14 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "កោ"
+      ],
+      "half_units": [
+        4
+      ],
+      "wide": 4,
+      "compact": 2
     },
     "note": "Split vowel around the base"
   },
@@ -134,8 +276,14 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "កេ"
+      ],
+      "half_units": [
+        3
+      ],
+      "wide": 3,
+      "compact": 2
     },
     "note": "Pre-base vowel"
   },
@@ -148,8 +296,40 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "H",
+        "e",
+        "l",
+        "l",
+        "o",
+        " ",
+        "ភា",
+        "សា",
+        "ខ្មែ",
+        "រ",
+        " ",
+        "1",
+        "2",
+        "3"
+      ],
+      "half_units": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        3,
+        4,
+        3,
+        1,
+        null,
+        null,
+        null,
+        null
+      ],
+      "wide": 21,
+      "compact": 17
     },
     "note": "Mixed Latin, Khmer and ASCII digits"
   },
@@ -162,9 +342,1037 @@
       "segmentation"
     ],
     "expected": {
-      "width": null,
-      "clusters": null
+      "clusters": [
+        "០",
+        "១",
+        "២",
+        "៣",
+        "៤",
+        "៥",
+        "៦",
+        "៧",
+        "៨",
+        "៩"
+      ],
+      "half_units": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "wide": 20,
+      "compact": 10
     },
     "note": "Khmer digits"
+  },
+  {
+    "id": "sentence-0003",
+    "category": "sentence",
+    "text": "មនុស្សទាំងអស់កើតមកមានសេរីភាព និងសមភាព ក្នុងសិទ្ធិ និងសេចក្ដីថ្លៃថ្នូរ។",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ម",
+        "នុ",
+        "ស្ស",
+        "ទាំ",
+        "ង",
+        "អ",
+        "ស់",
+        "កើ",
+        "ត",
+        "ម",
+        "ក",
+        "មា",
+        "ន",
+        "សេ",
+        "រី",
+        "ភា",
+        "ព",
+        " ",
+        "និ",
+        "ង",
+        "ស",
+        "ម",
+        "ភា",
+        "ព",
+        " ",
+        "ក្នុ",
+        "ង",
+        "សិ",
+        "ទ្ធិ",
+        " ",
+        "និ",
+        "ង",
+        "សេ",
+        "ច",
+        "ក្ដី",
+        "ថ្លៃ",
+        "ថ្នូ",
+        "រ",
+        "។"
+      ],
+      "half_units": [
+        2,
+        2,
+        4,
+        3,
+        2,
+        2,
+        3,
+        3,
+        2,
+        2,
+        2,
+        3,
+        2,
+        4,
+        1,
+        3,
+        2,
+        null,
+        2,
+        2,
+        3,
+        2,
+        3,
+        2,
+        null,
+        2,
+        2,
+        3,
+        2,
+        null,
+        2,
+        2,
+        4,
+        2,
+        2,
+        3,
+        2,
+        1,
+        2
+      ],
+      "wide": 88,
+      "compact": 51
+    },
+    "note": "UDHR article 1, first sentence"
+  },
+  {
+    "id": "sentence-0004",
+    "category": "sentence",
+    "text": "មនុស្សគ្រប់រូបសុទ្ធតែមានវិចារណញ្ញាណ និងសតិសម្បជញ្ញៈ ហើយត្រូវប្រព្រឹត្តចំពោះគ្នាទៅវិញទៅមក ក្នុងស្មារតីភាតរភាពជាបងប្អូន។",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ម",
+        "នុ",
+        "ស្ស",
+        "គ្រ",
+        "ប់",
+        "រូ",
+        "ប",
+        "សុ",
+        "ទ្ធ",
+        "តែ",
+        "មា",
+        "ន",
+        "វិ",
+        "ចា",
+        "រ",
+        "ណ",
+        "ញ្ញា",
+        "ណ",
+        " ",
+        "និ",
+        "ង",
+        "ស",
+        "តិ",
+        "ស",
+        "ម្ប",
+        "ជ",
+        "ញ្ញៈ",
+        " ",
+        "ហើ",
+        "យ",
+        "ត្រូ",
+        "វ",
+        "ប្រ",
+        "ព្រឹ",
+        "ត្ត",
+        "ចំ",
+        "ពោះ",
+        "គ្នា",
+        "ទៅ",
+        "វិ",
+        "ញ",
+        "ទៅ",
+        "ម",
+        "ក",
+        " ",
+        "ក្នុ",
+        "ង",
+        "ស្មា",
+        "រ",
+        "តី",
+        "ភា",
+        "ត",
+        "រ",
+        "ភា",
+        "ព",
+        "ជា",
+        "ប",
+        "ង",
+        "ប្អូ",
+        "ន",
+        "។"
+      ],
+      "half_units": [
+        2,
+        2,
+        4,
+        3,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        4,
+        4,
+        4,
+        null,
+        2,
+        2,
+        3,
+        2,
+        3,
+        3,
+        2,
+        4,
+        null,
+        4,
+        3,
+        3,
+        1,
+        3,
+        3,
+        2,
+        2,
+        5,
+        3,
+        4,
+        1,
+        3,
+        4,
+        2,
+        2,
+        null,
+        2,
+        2,
+        4,
+        1,
+        2,
+        3,
+        2,
+        1,
+        3,
+        2,
+        3,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "wide": 150,
+      "compact": 89
+    },
+    "note": "UDHR article 1, second sentence"
+  },
+  {
+    "id": "sentence-0005",
+    "category": "sentence",
+    "text": "ព្រះរាជាណាចក្រកម្ពុជា ជាតិ សាសនា ព្រះមហាក្សត្រ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ព្រះ",
+        "រា",
+        "ជា",
+        "ណា",
+        "ច",
+        "ក្រ",
+        "ក",
+        "ម្ពុ",
+        "ជា",
+        " ",
+        "ជា",
+        "តិ",
+        " ",
+        "សា",
+        "ស",
+        "នា",
+        " ",
+        "ព្រះ",
+        "ម",
+        "ហា",
+        "ក្ស",
+        "ត្រ"
+      ],
+      "half_units": [
+        4,
+        2,
+        3,
+        5,
+        2,
+        3,
+        2,
+        2,
+        3,
+        null,
+        3,
+        2,
+        null,
+        4,
+        3,
+        3,
+        null,
+        4,
+        2,
+        4,
+        3,
+        3
+      ],
+      "wide": 60,
+      "compact": 36
+    },
+    "note": "National motto"
+  },
+  {
+    "id": "sentence-0006",
+    "category": "sentence",
+    "text": "ខ្ញុំរៀនភាសាខ្មែរនៅសាលារៀន។",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ខ្ញុំ",
+        "រៀ",
+        "ន",
+        "ភា",
+        "សា",
+        "ខ្មែ",
+        "រ",
+        "នៅ",
+        "សា",
+        "លា",
+        "រៀ",
+        "ន",
+        "។"
+      ],
+      "half_units": [
+        2,
+        3,
+        2,
+        3,
+        4,
+        3,
+        1,
+        4,
+        4,
+        4,
+        3,
+        2,
+        2
+      ],
+      "wide": 37,
+      "compact": 21
+    },
+    "note": "Two-part vowel ៀ and sentence-final ។"
+  },
+  {
+    "id": "coeng-0003",
+    "category": "coeng",
+    "text": "ស្ត្រី",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ស្ត្រី"
+      ],
+      "half_units": [
+        4
+      ],
+      "wide": 4,
+      "compact": 2
+    },
+    "note": "Two subscripts: coeng-TA and coeng-RO"
+  },
+  {
+    "id": "coeng-0004",
+    "category": "coeng",
+    "text": "ក្",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ក្"
+      ],
+      "half_units": [
+        2
+      ],
+      "wide": 2,
+      "compact": 1
+    },
+    "note": "Dangling coeng at end of text"
+  },
+  {
+    "id": "coeng-0005",
+    "category": "coeng",
+    "text": "ក្ស",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ក្ស"
+      ],
+      "half_units": [
+        3
+      ],
+      "wide": 3,
+      "compact": 2
+    },
+    "note": "Side-drawn subscript ្ស"
+  },
+  {
+    "id": "dependent-vowel-0003",
+    "category": "dependent-vowel",
+    "text": "កៅ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "កៅ"
+      ],
+      "half_units": [
+        4
+      ],
+      "wide": 4,
+      "compact": 2
+    },
+    "note": "Two-part vowel ៅ"
+  },
+  {
+    "id": "dependent-vowel-0004",
+    "category": "dependent-vowel",
+    "text": "កឿ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "កឿ"
+      ],
+      "half_units": [
+        4
+      ],
+      "wide": 4,
+      "compact": 2
+    },
+    "note": "Two-part vowel ឿ"
+  },
+  {
+    "id": "diacritic-0001",
+    "category": "diacritic",
+    "text": "កោះ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "កោះ"
+      ],
+      "half_units": [
+        5
+      ],
+      "wide": 5,
+      "compact": 3
+    },
+    "note": "Two-part vowel + reahmuk ះ"
+  },
+  {
+    "id": "diacritic-0002",
+    "category": "diacritic",
+    "text": "ក់",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ក់"
+      ],
+      "half_units": [
+        2
+      ],
+      "wide": 2,
+      "compact": 1
+    },
+    "note": "Non-spacing bantoc"
+  },
+  {
+    "id": "diacritic-0003",
+    "category": "diacritic",
+    "text": "ា",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ា"
+      ],
+      "half_units": [
+        3
+      ],
+      "wide": 3,
+      "compact": 2
+    },
+    "note": "Spacing vowel with no base (dotted circle)"
+  },
+  {
+    "id": "diacritic-0004",
+    "category": "diacritic",
+    "text": "ិ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ិ"
+      ],
+      "half_units": [
+        2
+      ],
+      "wide": 2,
+      "compact": 1
+    },
+    "note": "Non-spacing vowel with no base (dotted circle)"
+  },
+  {
+    "id": "consonant-0001",
+    "category": "consonant",
+    "text": "ក ខ គ ឃ ង ច ឆ ជ ឈ ញ ដ ឋ ឌ ឍ ណ ត ថ ទ ធ ន ប ផ ព ភ ម យ រ ល វ ឝ ឞ ស ហ ឡ អ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ក",
+        " ",
+        "ខ",
+        " ",
+        "គ",
+        " ",
+        "ឃ",
+        " ",
+        "ង",
+        " ",
+        "ច",
+        " ",
+        "ឆ",
+        " ",
+        "ជ",
+        " ",
+        "ឈ",
+        " ",
+        "ញ",
+        " ",
+        "ដ",
+        " ",
+        "ឋ",
+        " ",
+        "ឌ",
+        " ",
+        "ឍ",
+        " ",
+        "ណ",
+        " ",
+        "ត",
+        " ",
+        "ថ",
+        " ",
+        "ទ",
+        " ",
+        "ធ",
+        " ",
+        "ន",
+        " ",
+        "ប",
+        " ",
+        "ផ",
+        " ",
+        "ព",
+        " ",
+        "ភ",
+        " ",
+        "ម",
+        " ",
+        "យ",
+        " ",
+        "រ",
+        " ",
+        "ល",
+        " ",
+        "វ",
+        " ",
+        "ឝ",
+        " ",
+        "ឞ",
+        " ",
+        "ស",
+        " ",
+        "ហ",
+        " ",
+        "ឡ",
+        " ",
+        "អ"
+      ],
+      "half_units": [
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        3,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        4,
+        null,
+        3,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        3,
+        null,
+        4,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        3,
+        null,
+        1,
+        null,
+        3,
+        null,
+        1,
+        null,
+        2,
+        null,
+        2,
+        null,
+        3,
+        null,
+        3,
+        null,
+        3,
+        null,
+        2
+      ],
+      "wide": 114,
+      "compact": 79
+    },
+    "note": "All 35 consonants"
+  },
+  {
+    "id": "independent-vowel-0001",
+    "category": "independent-vowel",
+    "text": "ឥ ឦ ឧ ឩ ឪ ឫ ឬ ឭ ឮ ឯ ឰ ឱ ឲ ឳ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ឥ",
+        " ",
+        "ឦ",
+        " ",
+        "ឧ",
+        " ",
+        "ឩ",
+        " ",
+        "ឪ",
+        " ",
+        "ឫ",
+        " ",
+        "ឬ",
+        " ",
+        "ឭ",
+        " ",
+        "ឮ",
+        " ",
+        "ឯ",
+        " ",
+        "ឰ",
+        " ",
+        "ឱ",
+        " ",
+        "ឲ",
+        " ",
+        "ឳ"
+      ],
+      "half_units": [
+        2,
+        null,
+        3,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2,
+        null,
+        2
+      ],
+      "wide": 42,
+      "compact": 28
+    },
+    "note": "Independent vowels"
+  },
+  {
+    "id": "punctuation-0001",
+    "category": "punctuation",
+    "text": "។ ៕ ៖ ៗ ៘ ៙ ៚ ៛",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "។",
+        " ",
+        "៕",
+        " ",
+        "៖",
+        " ",
+        "ៗ",
+        " ",
+        "៘",
+        " ",
+        "៙",
+        " ",
+        "៚",
+        " ",
+        "៛"
+      ],
+      "half_units": [
+        2,
+        null,
+        2,
+        null,
+        1,
+        null,
+        2,
+        null,
+        6,
+        null,
+        2,
+        null,
+        4,
+        null,
+        1
+      ],
+      "wide": 27,
+      "compact": 18
+    },
+    "note": "Khmer punctuation and riel sign"
+  },
+  {
+    "id": "symbol-0001",
+    "category": "symbol",
+    "text": "᧠ ᧪ ᧰ ᧺",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "᧠",
+        " ",
+        "᧪",
+        " ",
+        "᧰",
+        " ",
+        "᧺"
+      ],
+      "half_units": [
+        2,
+        null,
+        4,
+        null,
+        2,
+        null,
+        4
+      ],
+      "wide": 15,
+      "compact": 9
+    },
+    "note": "Lunar date symbols, narrow and wide"
+  },
+  {
+    "id": "mixed-0002",
+    "category": "mixed",
+    "text": "ក​ខ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "ក",
+        "​",
+        "ខ"
+      ],
+      "half_units": [
+        2,
+        null,
+        2
+      ],
+      "wide": 4,
+      "compact": 2
+    },
+    "note": "Zero-width space between words"
+  },
+  {
+    "id": "mixed-0003",
+    "category": "mixed",
+    "text": "git commit -m \"ភាសាខ្មែរ\"",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "g",
+        "i",
+        "t",
+        " ",
+        "c",
+        "o",
+        "m",
+        "m",
+        "i",
+        "t",
+        " ",
+        "-",
+        "m",
+        " ",
+        "\"",
+        "ភា",
+        "សា",
+        "ខ្មែ",
+        "រ",
+        "\""
+      ],
+      "half_units": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        3,
+        4,
+        3,
+        1,
+        null
+      ],
+      "wide": 27,
+      "compact": 23
+    },
+    "note": "Khmer inside a shell command"
+  },
+  {
+    "id": "mixed-0004",
+    "category": "mixed",
+    "text": "中文 ខ្មែរ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "中",
+        "文",
+        " ",
+        "ខ្មែ",
+        "រ"
+      ],
+      "half_units": [
+        null,
+        null,
+        null,
+        3,
+        1
+      ],
+      "wide": 9,
+      "compact": 8
+    },
+    "note": "CJK next to Khmer"
+  },
+  {
+    "id": "mixed-0005",
+    "category": "mixed",
+    "text": "café ក",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "c",
+        "a",
+        "f",
+        "é",
+        " ",
+        "ក"
+      ],
+      "half_units": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        2
+      ],
+      "wide": 7,
+      "compact": 6
+    },
+    "note": "Latin with combining acute accent"
+  },
+  {
+    "id": "numeral-0002",
+    "category": "numeral",
+    "text": "១២៣.៤៥ ៛",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "clusters": [
+        "១",
+        "២",
+        "៣",
+        ".",
+        "៤",
+        "៥",
+        " ",
+        "៛"
+      ],
+      "half_units": [
+        2,
+        2,
+        2,
+        null,
+        2,
+        2,
+        null,
+        1
+      ],
+      "wide": 13,
+      "compact": 8
+    },
+    "note": "Khmer digits with riel sign"
   }
 ]

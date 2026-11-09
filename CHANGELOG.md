@@ -14,3 +14,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - CI for Linux, macOS and Windows.
 - `tools/kte-measure`: measures shaped Khmer advances across fonts.
 - Research 0001: Khmer advance measurements across 160 fonts.
+- KTE Width Spec 0.1.0: half-unit tables, Wide and Compact cell models, coeng-joining segmentation (ADR 0004).
+- `kte-unicode`: classification, segmentation, widths; corpus conformance test.
+- `kte-cell`: grid layout, wrapping, glyph fitting.
+- `kte-shaper`: HarfBuzz shaping via `harfrust`, cluster grouping, font sizing.
+- `kte-terminal`: VT/ANSI terminal model with multi-cell clusters, selection, scrollback, alternate screen, DSR and DECRQM (mode 2027) replies.
+- `kte-core` facade; `kte-capi` C ABI with `include/kte.h`, C demo and WebAssembly smoke test.
+- `tools/spec-ref`: independent Python implementation that generates corpus expectations.
+- Test corpus expanded to 34 cases.

@@ -10,7 +10,7 @@
 ការអភិវឌ្ឍកម្មវិធីជាភាសាខ្មែរ
 ```
 
-> **Status: pre-alpha.** The project structure is in place. Phase 0 (the width spec and test corpus) is in progress. Nothing is usable yet.
+> **Status: pre-alpha.** The [width spec](spec/kte-width-spec.md) (v0.1 draft) and the core libraries (Phase 1) are implemented and tested. The standalone terminal (Phase 2) is next.
 
 ## The problem
 
@@ -38,8 +38,33 @@ See [docs/strategy.md](docs/strategy.md) for the full analysis and roadmap.
 | `crates/kte-capi` | C ABI for native terminals |
 | `apps/kte-term` | Standalone terminal emulator |
 | `integrations/xtermjs` | xterm.js addon (TypeScript) |
-| `tests/corpus` | Khmer test corpus |
-| `docs/` | Strategy, architecture decisions (ADRs), upstream tracker |
+| `include/kte.h` | C header for `kte-capi` |
+| `tools/kte-measure` | Font measurement tool behind the spec |
+| `tools/spec-ref` | Independent Python implementation of the spec; generates corpus expectations |
+| `tests/corpus` | Khmer conformance corpus |
+| `docs/` | Strategy, architecture, research, decisions (ADRs), upstream tracker |
+
+## Usage
+
+Rust:
+
+```rust
+use kte_core::{CellModel, Terminal, str_width};
+
+assert_eq!(str_width("ភាសាខ្មែរ", CellModel::Wide), 11);
+
+let mut term = Terminal::new(24, 80, CellModel::Wide);
+term.feed("សួស្តី ពិភពលោក!".as_bytes());
+assert_eq!(term.cursor(), (0, 21));
+```
+
+C (see [`include/kte.h`](include/kte.h) and [`examples/c/demo.c`](examples/c/demo.c)):
+
+```c
+size_t cells = kte_str_width((const uint8_t *)text, len, KTE_MODEL_WIDE);
+```
+
+WebAssembly: build `kte-capi` for `wasm32-unknown-unknown`; [`tests/wasm/smoke.mjs`](tests/wasm/smoke.mjs) shows how to call it from JavaScript.
 
 ## Building
 
@@ -48,19 +73,30 @@ Requires a stable Rust toolchain (MSRV 1.85).
 ```sh
 cargo build
 cargo test
-cargo run -p kte-term
+
+# C library and demo
+cargo build -p kte-capi --release
+cc examples/c/demo.c -Iinclude target/release/libkte_capi.a -o kte-demo && ./kte-demo
+
+# WebAssembly
+rustup target add wasm32-unknown-unknown
+cargo build -p kte-capi --release --target wasm32-unknown-unknown
+node tests/wasm/smoke.mjs
+
+# Re-run the font measurements
+cargo run -p kte-measure --release -- /path/to/fonts
 ```
 
 ## Roadmap
 
-| Phase | Deliverable |
-|-------|-------------|
-| 0 | KTE Width Spec v0 + conformance corpus |
-| 1 | Core crates (Rust, C ABI, WASM) |
-| 2 | `kte-term` MVP (macOS first, then Windows and Linux) |
-| 3 | xterm.js addon → VS Code |
-| 4 | Native terminals (WezTerm → Ghostty → Windows Terminal → others) |
-| 5 | Width libraries, shells, tmux |
+| Phase | Deliverable | Status |
+|-------|-------------|--------|
+| 0 | KTE Width Spec v0 + conformance corpus | 🟡 v0.1 draft; needs native review, more fonts and corpus |
+| 1 | Core crates (Rust, C ABI, WASM) | ✅ done |
+| 2 | `kte-term` MVP (macOS first, then Windows and Linux) | ⬜ next |
+| 3 | xterm.js addon → VS Code | ⬜ |
+| 4 | Native terminals (WezTerm → Ghostty → Windows Terminal → others) | ⬜ |
+| 5 | Width libraries, shells, tmux | ⬜ |
 
 Progress on each upstream project is tracked in [docs/upstream](docs/upstream/README.md).
 

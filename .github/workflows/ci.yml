@@ -40,6 +40,11 @@ jobs:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Install a Khmer font (Linux) for shaper tests
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-khmeros-core
+          echo "KTE_TEST_FONT=$(fc-list : file | grep -i khmeros | head -1 | cut -d: -f1)" >> "$GITHUB_ENV"
       - run: cargo test --workspace
 
   msrv:
@@ -50,7 +55,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: "1.85"
-      - run: cargo check --workspace
+      - run: cargo check --workspace --all-targets
 
   deny:
     name: cargo-deny (licenses, advisories)
@@ -59,9 +64,43 @@ jobs:
       - uses: actions/checkout@v7
       - uses: EmbarkStudios/cargo-deny-action@v2
 
-  corpus:
-    name: corpus is valid JSON
+  spec:
+    name: spec reference agrees with corpus
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: python3 -c "import json; json.load(open('tests/corpus/khmer_corpus.json', encoding='utf-8'))"
+      - run: python3 tools/spec-ref/kte_spec_ref.py --check
+
+  c-abi:
+    name: C API demo (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p kte-capi --release
+      - name: Compile and run examples/c/demo.c
+        run: |
+          LIBS=""
+          if [ "$RUNNER_OS" = "Linux" ]; then LIBS="-lpthread -ldl -lm"; fi
+          cc -Wall -Wextra -Werror examples/c/demo.c -Iinclude target/release/libkte_capi.a $LIBS -o kte-demo
+          ./kte-demo
+
+  wasm:
+    name: WebAssembly build + Node smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p kte-capi --release --target wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/wasm/smoke.mjs

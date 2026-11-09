@@ -15,6 +15,7 @@ categories.workspace = true
 [dependencies]
 kte-unicode.workspace = true
 kte-cell.workspace = true
+vte.workspace = true
 
 [lints]
 workspace = true

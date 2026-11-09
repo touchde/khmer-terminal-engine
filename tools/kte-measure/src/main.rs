@@ -49,6 +49,15 @@ const NON_SPACING: &[char] = &[
     '\u{17D1}', '\u{17D3}', '\u{17DD}',
 ];
 
+/// Other Khmer characters that stand alone: punctuation, currency, digits,
+/// numeric symbols and lunar date symbols.
+fn others() -> impl Iterator<Item = char> {
+    ('\u{17D4}'..='\u{17DC}')
+        .chain('\u{17E0}'..='\u{17E9}')
+        .chain('\u{17F0}'..='\u{17F9}')
+        .chain('\u{19E0}'..='\u{19FF}')
+}
+
 /// Fonts a terminal is likely to use for Khmer (system and UI fonts).
 const COMMON_FONTS: &[&str] = &[
     "Noto Sans Khmer",
@@ -98,6 +107,8 @@ struct Metrics {
     name: String,
     /// Advance of each base (same order as `bases()`), in consonant units.
     base: Vec<f32>,
+    /// Advance of each `others()` character, in consonant units; `None` if the font lacks it.
+    other: Vec<Option<f32>>,
     /// Extra advance each spacing sign adds to KA, in consonant units.
     spacing: Vec<f32>,
     /// Extra advance each non-spacing sign adds to KA, in consonant units.
@@ -237,6 +248,12 @@ fn measure(font: &Font, syllables: &[String]) -> Option<Metrics> {
         base: bases()
             .map(|c| Some(adv(&c.to_string())? / unit))
             .collect::<Option<_>>()?,
+        other: others()
+            .map(|c| {
+                charmap.map_unicode(c)?;
+                Some(adv(&c.to_string())? / unit)
+            })
+            .collect(),
         spacing: SPACING
             .iter()
             .map(|v| extra(format!("{KA}{v}")))
@@ -470,6 +487,26 @@ fn report(all: &[Metrics], scanned: usize, syllables: &[String]) {
     rows.sort_by(|a, b| b.1.1.total_cmp(&a.1.1).then(a.0.cmp(&b.0)));
     for (c, (lo, med, hi)) in rows {
         println!("| ក្{c} (U+{:04X}) | {med:.2} | {lo:.2}–{hi:.2} |", c as u32);
+    }
+
+    println!("\n## 2b. Other Khmer characters (standalone advance)\n");
+    println!("| Character | Fonts with glyph | Median | p10–p90 |\n|---|---|---|---|");
+    for (i, c) in others().enumerate() {
+        let mut v: Vec<f32> = all.iter().filter_map(|m| m.other[i]).collect();
+        if v.is_empty() {
+            println!("| {c} U+{:04X} | 0 | – | – |", c as u32);
+            continue;
+        }
+        let n = v.len();
+        let (lo, med, hi) = (
+            percentile(&mut v, 0.1),
+            percentile(&mut v, 0.5),
+            percentile(&mut v, 0.9),
+        );
+        println!(
+            "| {c} U+{:04X} | {n} | {med:.2} | {lo:.2}–{hi:.2} |",
+            c as u32
+        );
     }
 
     let derived = derive(&all);

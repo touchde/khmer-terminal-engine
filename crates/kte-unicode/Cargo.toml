@@ -13,7 +13,11 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+unicode-segmentation.workspace = true
+unicode-width.workspace = true
 
+[dev-dependencies]
+serde_json.workspace = true
 
 [lints]
 workspace = true

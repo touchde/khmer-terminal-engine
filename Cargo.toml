@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/*", "apps/kte-term", "tools/*"]
+members = ["crates/*", "apps/kte-term", "tools/kte-measure"]
 
 [workspace.package]
 version = "0.0.0"
@@ -19,6 +19,12 @@ kte-shaper = { path = "crates/kte-shaper", version = "0.0.0" }
 kte-cell = { path = "crates/kte-cell", version = "0.0.0" }
 kte-terminal = { path = "crates/kte-terminal", version = "0.0.0" }
 kte-core = { path = "crates/kte-core", version = "0.0.0" }
+harfrust = "0.15"
+read-fonts = "0.46"
+serde_json = "1"
+unicode-segmentation = "1.13"
+unicode-width = "0.2"
+vte = "0.15"
 
 [workspace.lints.rust]
 unsafe_code = "deny"

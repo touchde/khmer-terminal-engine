@@ -12,5 +12,5 @@ publish = false
 workspace = true
 
 [dependencies]
-harfrust = "0.15"
-read-fonts = "0.46"
+harfrust.workspace = true
+read-fonts.workspace = true

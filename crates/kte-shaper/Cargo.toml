@@ -13,6 +13,8 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+harfrust.workspace = true
+kte-cell.workspace = true
 kte-unicode.workspace = true
 
 [lints]

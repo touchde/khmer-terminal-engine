@@ -1,6 +1,6 @@
 # 0002. Cell width is computed from codepoints only
 
-- **Status:** Accepted (the value for spacing vowels is still open)
+- **Status:** Accepted
 - **Date:** 2026-11-09
 
 ## Context
@@ -19,6 +19,6 @@ Font measurements are used only to *choose* the rule (in Phase 0), never at runt
 - Rendering is not pixel-identical to proportional layout; spacing between syllables is snapped to the grid.
 - A proportional "reading mode" for plain output remains possible as a terminal-only feature, outside the spec.
 
-## Open
+## Follow-up
 
-Whether spacing vowels (Mc) count as 0 or 1 cell will be decided from font measurements over the corpus.
+The values were chosen from font measurements in [Research 0001](../research/0001-khmer-advance-measurements.md); see [ADR 0004](0004-half-consonant-cell-model.md).
