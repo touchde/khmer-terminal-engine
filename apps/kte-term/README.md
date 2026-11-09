@@ -54,7 +54,7 @@ bash needs no setting.
 --model <MODEL>       legacy (default), wide, compact, legacy-glibc, legacy-apple
 --font-size <PX>      Latin font size in pixels [default: 15]
 --line-height <X>     Row height as a multiple of the font's line height [default: 1.7]
---khmer-fill <X>      Khmer size in cells per consonant, 0.5-2.0 [default: 1.4 legacy/compact, 1.0 wide]
+--khmer-fill <X>      Khmer size in cells per consonant, 0.5-2.0 [default: 1.2 legacy/compact, 1.0 wide]
 --rows <N>, --cols <N>
 --snapshot <FILE>     Render to a PNG instead of opening a window
 --text <TEXT>         Text for --snapshot

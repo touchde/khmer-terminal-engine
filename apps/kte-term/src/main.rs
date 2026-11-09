@@ -32,7 +32,7 @@ OPTIONS:
     --font-size <PX>      Latin font size in pixels [default: 15]
     --line-height <X>     Row height as a multiple of the font's line height [default: 1.7]
     --khmer-fill <X>      Khmer size: how many of its cells a Khmer consonant spans,
-                          0.5-2.0 [default: 1.4 for legacy and compact, 1.0 for wide]
+                          0.5-2.0 [default: 1.2 for legacy and compact, 1.0 for wide]
     --model <MODEL>       Khmer cell model [default: legacy]
                             legacy   match the system wcwidth() so today's shells and
                                      editors line up (glibc rules on Linux, Apple's on macOS)
@@ -128,7 +128,7 @@ fn parse_args() -> Result<Options, String> {
         // Words may take the room they need (see render.rs), so Khmer can be
         // drawn at a size that balances with Latin. Wide already gives a
         // consonant 2 cells.
-        o.sizing.khmer_fill = if o.model == CellModel::Wide { 1.0 } else { 1.4 };
+        o.sizing.khmer_fill = if o.model == CellModel::Wide { 1.0 } else { 1.2 };
     }
     Ok(o)
 }
