@@ -105,6 +105,8 @@ pub fn read(source: &FontSource) -> Result<Vec<u8>, String> {
 #[derive(Debug, Clone, Copy)]
 pub struct ShapedGlyph {
     pub id: u32,
+    /// UTF-8 byte offset of the source text this glyph belongs to.
+    pub cluster: u32,
     pub x_advance: i32,
     pub x_offset: i32,
     pub y_offset: i32,
@@ -190,6 +192,7 @@ impl Face {
             .zip(buffer.glyph_positions())
             .map(|(info, pos)| ShapedGlyph {
                 id: info.glyph_id,
+                cluster: info.cluster,
                 x_advance: pos.x_advance,
                 x_offset: pos.x_offset,
                 y_offset: pos.y_offset,

@@ -192,6 +192,9 @@ fn run_live(o: &Options, term: &mut Terminal) -> Result<(), String> {
             Ok(bytes) => {
                 seen_output = true;
                 last_output = Instant::now();
+                if std::env::var_os("KTE_TRACE").is_some() {
+                    eprintln!("pty> {:?}", String::from_utf8_lossy(&bytes));
+                }
                 term.feed(&bytes);
                 pty.write(&term.take_responses());
             }
@@ -227,8 +230,9 @@ fn snapshot(o: &Options, path: &str) -> Result<(), String> {
     save_png(&frame, path)
 }
 
-/// Prints every non-blank cell: column, width, text and codepoints.
+/// Prints the cursor and every non-blank cell: column, width, text and codepoints.
 fn dump(term: &Terminal) {
+    println!("cursor: {:?}", term.cursor());
     for row in 0..term.rows() {
         let cells: Vec<String> = (0..term.cols())
             .filter_map(|col| {

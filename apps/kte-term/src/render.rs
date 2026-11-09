@@ -156,6 +156,29 @@ struct Shaped {
     glyphs: Vec<ShapedGlyph>,
     /// Total advance in pixels at the face's render size.
     advance_px: f32,
+    /// Shaping clusters in text order: `(byte offset, left px, right px)`.
+    clusters: Vec<(usize, f32, f32)>,
+}
+
+impl Shaped {
+    /// Horizontal position (natural size, from the start) where the text at
+    /// byte `offset` begins on screen. Inside a cluster that the shaper kept
+    /// whole (a Khmer syllable), the position is interpolated across it.
+    fn x_at(&self, offset: usize, text_len: usize) -> f32 {
+        let i = match self.clusters.iter().rposition(|c| c.0 <= offset) {
+            Some(i) => i,
+            None => return 0.0,
+        };
+        let (start, left, right) = self.clusters[i];
+        if offset == start {
+            return left;
+        }
+        let next = self.clusters.get(i + 1).map_or(text_len, |c| c.0);
+        if next <= start {
+            return right;
+        }
+        left + (right - left) * (offset - start) as f32 / (next - start) as f32
+    }
 }
 
 pub struct Renderer {
@@ -190,6 +213,9 @@ enum Unit {
         cells: usize,
         fg: u32,
         natural: f32,
+        /// Left edge of each of its columns at natural size, from the
+        /// shaped glyphs, so the cursor lands on real syllable boundaries.
+        col_x: Vec<f32>,
     },
 }
 
@@ -331,10 +357,26 @@ impl Renderer {
             )
         };
         let advance: i32 = glyphs.iter().map(|g| g.x_advance).sum();
+        let to_px = px / upem;
+        let mut clusters: Vec<(usize, f32, f32)> = Vec::new();
+        let mut pen = 0.0f32;
+        for g in &glyphs {
+            let (left, right) = (pen, pen + g.x_advance as f32 * to_px);
+            match clusters.iter_mut().find(|c| c.0 == g.cluster as usize) {
+                Some(c) => {
+                    c.1 = c.1.min(left);
+                    c.2 = c.2.max(right);
+                }
+                None => clusters.push((g.cluster as usize, left, right)),
+            }
+            pen = right;
+        }
+        clusters.sort_by_key(|c| c.0);
         let shaped = Rc::new(Shaped {
             face,
             glyphs,
-            advance_px: advance as f32 * px / upem,
+            advance_px: advance as f32 * to_px,
+            clusters,
         });
         if self.shaped.len() > 4096 {
             self.shaped.clear();
@@ -363,6 +405,8 @@ impl Renderer {
             let (fg, _) = self.theme.cell_colors(&cell.attrs);
             let mut text = cell.text.clone();
             let mut cells = cell.width.max(1) as usize;
+            // (byte offset, width) of each cell joined into this unit.
+            let mut parts = vec![(0usize, cells)];
             while col + cells < term.cols() {
                 let next = term.cell(row, col + cells);
                 if next.width == 0 || next.text.is_empty() {
@@ -374,16 +418,28 @@ impl Renderer {
                 if !same_word && !kte_core::unicode::joins_next(&text, &next.text) {
                     break;
                 }
+                parts.push((text.len(), next.width as usize));
                 text.push_str(&next.text);
                 cells += next.width as usize;
             }
             let shaped = self.shape(&text);
             let unit = if shaped.face == KHMER {
+                let mut col_x = Vec::with_capacity(cells);
+                for (i, &(offset, width)) in parts.iter().enumerate() {
+                    let x0 = shaped.x_at(offset, text.len());
+                    let x1 = parts
+                        .get(i + 1)
+                        .map_or(shaped.advance_px, |p| shaped.x_at(p.0, text.len()));
+                    for j in 0..width {
+                        col_x.push(x0 + (x1 - x0) * j as f32 / width as f32);
+                    }
+                }
                 Unit::Khmer {
                     text,
                     cells,
                     fg,
                     natural: shaped.advance_px,
+                    col_x,
                 }
             } else {
                 Unit::Fixed { text, cells, fg }
@@ -394,32 +450,36 @@ impl Renderer {
         out
     }
 
-    /// Lays a row out in pixels. Text starts at its grid position unless the
-    /// text before it needs the room; Khmer words keep their natural width,
-    /// scaled by `k`. Returns the placement, the column edges, and where the
-    /// last non-empty unit ends.
+    /// Lays a row out in pixels. Text flows: each unit starts where the one
+    /// before it ends, so a Khmer word (natural width, scaled by `k`) never
+    /// leaves a gap or overlaps what follows. Empty cells are elastic: they
+    /// shrink or grow so that a run of them ends back on the grid. Latin-only
+    /// text therefore stays exactly on the grid. Returns the placement, the
+    /// column edges, and where the last non-empty unit ends.
     fn place(units: Vec<(usize, Unit)>, cols: usize, cw: f32, k: f32) -> (Placed, Vec<f32>, f32) {
         let mut xs = vec![0.0f32; cols + 1];
         let mut placed = Vec::with_capacity(units.len());
         let (mut pen, mut content_end) = (0.0f32, 0.0f32);
         for (col, unit) in units {
             let grid = col as f32 * cw;
-            let x = grid.max(pen);
+            let x = pen;
             let cells = unit.cells();
             let w = match &unit {
                 Unit::Empty => (grid + cw - x).max(0.0),
                 Unit::Fixed { cells, .. } => *cells as f32 * cw,
                 Unit::Khmer { natural, .. } => natural * k,
             };
-            // Columns inside the unit share its width evenly; a unit narrower
-            // than its grid cells (other than an empty one) keeps the grid.
-            let span = match unit {
-                Unit::Empty => w,
-                _ => w.max(cells as f32 * cw),
-            };
+            // Columns inside a non-Khmer unit share its width evenly.
+            let span = w;
             for i in 0..cells {
+                let offset = match &unit {
+                    Unit::Khmer { col_x, natural, .. } => {
+                        col_x.get(i).copied().unwrap_or(0.0) * w / natural.max(f32::EPSILON)
+                    }
+                    _ => span * i as f32 / cells as f32,
+                };
                 if let Some(edge) = xs.get_mut(col + i) {
-                    *edge = x + span * i as f32 / cells as f32;
+                    *edge = x + offset;
                 }
             }
             pen = x + w;
@@ -496,7 +556,12 @@ impl Renderer {
         if show_cursor {
             let xs = &layouts[cursor.0].1;
             let x0 = xs[cursor_span.start.min(term.cols())];
-            let x1 = xs[cursor_span.end.min(term.cols())].max(x0 + cw);
+            let on_text = !term.cell(cursor.0, cursor_span.start).text.is_empty();
+            let x1 = if on_text {
+                xs[cursor_span.end.min(term.cols())].max(x0 + cw * 0.5)
+            } else {
+                x0 + cw
+            };
             let (x, w) = ((pad + x0).round() as i32, (x1 - x0).round() as i32);
             let y = pad as i32 + cursor.0 as i32 * ch;
             if overlay.focused {
@@ -585,6 +650,9 @@ mod tests {
             cells,
             fg: 0,
             natural,
+            col_x: (0..cells)
+                .map(|i| natural * i as f32 / cells as f32)
+                .collect(),
         }
     }
 
@@ -622,10 +690,32 @@ mod tests {
     }
 
     #[test]
-    fn narrow_word_keeps_the_grid() {
+    fn text_after_a_narrow_word_follows_it() {
         let units = vec![(0, khmer(3, 12.0)), (3, fixed(1))];
         let (placed, xs, _) = Renderer::place(units, 4, 10.0, 1.0);
-        assert_eq!(placed[1].2, 30.0);
-        assert_eq!(&xs[..4], &[0.0, 10.0, 20.0, 30.0]);
+        assert_eq!(placed[1].2, 12.0); // no gap after the 12 px word
+        assert_eq!(&xs[..4], &[0.0, 4.0, 8.0, 12.0]);
+    }
+
+    #[test]
+    fn cursor_columns_follow_glyphs() {
+        // Two cells; the first syllable is 25 px wide, the second 5 px.
+        let unit = Unit::Khmer {
+            text: String::new(),
+            cells: 2,
+            fg: 0,
+            natural: 30.0,
+            col_x: vec![0.0, 25.0],
+        };
+        let (_, xs, _) = Renderer::place(vec![(0, unit)], 2, 10.0, 1.0);
+        assert_eq!(&xs[..], &[0.0, 25.0, 30.0]);
+    }
+
+    #[test]
+    fn empty_cells_resync_to_the_grid_after_a_narrow_word() {
+        let units = vec![(0, khmer(3, 12.0)), (3, Unit::Empty), (4, fixed(1))];
+        let (placed, xs, _) = Renderer::place(units, 5, 10.0, 1.0);
+        assert_eq!(xs[3], 12.0); // a cursor here sits right after the word
+        assert_eq!(placed[2].2, 40.0); // text after the empty cell is back on the grid
     }
 }
