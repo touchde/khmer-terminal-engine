@@ -26,11 +26,16 @@ pub const KTE_INVALID: usize = usize::MAX;
 /// Opaque terminal handle.
 pub struct KteTerminal(Terminal);
 
+/// Model ids: 0 = Wide, 1 = Compact, 2 = Legacy (glibc), 3 = Legacy (Apple),
+/// 4 = Legacy (this platform). Unknown ids mean Wide.
 fn model(m: u32) -> CellModel {
-    if m == 1 {
-        CellModel::Compact
-    } else {
-        CellModel::Wide
+    use kte_core::unicode::LegacyWidths;
+    match m {
+        1 => CellModel::Compact,
+        2 => CellModel::Legacy(LegacyWidths::Glibc),
+        3 => CellModel::Legacy(LegacyWidths::Apple),
+        4 => CellModel::Legacy(LegacyWidths::native()),
+        _ => CellModel::Wide,
     }
 }
 
@@ -67,10 +72,10 @@ unsafe fn write_out(text: &[u8], buf: *mut u8, buf_len: usize) -> usize {
 /// Version of the KTE Width Spec implemented, as a static NUL-terminated string.
 #[unsafe(no_mangle)]
 pub extern "C" fn kte_spec_version() -> *const c_char {
-    c"0.1.0".as_ptr()
+    c"0.2.0".as_ptr()
 }
 
-/// Width in cells of a UTF-8 string. `model`: 0 = Wide, 1 = Compact.
+/// Width in cells of a UTF-8 string. `model_id`: see `KTE_MODEL_*` in `kte.h`.
 ///
 /// # Safety
 /// `text` must be valid for reads of `len` bytes.

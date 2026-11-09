@@ -16,6 +16,9 @@ fn measurement() {
         let (p, n) = bytes("ភាសាខ្មែរ");
         assert_eq!(kte_str_width(p, n, 0), 11);
         assert_eq!(kte_str_width(p, n, 1), 7); // 2 + 2 + 2 + 1
+        // Legacy: ភ ា ស ា ខ ្ម ែ រ → glibc counts the 3 spacing signs, Apple does not.
+        assert_eq!(kte_str_width(p, n, 2), 8);
+        assert_eq!(kte_str_width(p, n, 3), 5);
         assert_eq!(kte_half_units(p, n), 3); // ភា
         let (p, n) = bytes("ok");
         assert_eq!(kte_half_units(p, n), -1);

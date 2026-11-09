@@ -52,6 +52,43 @@ impl<'a> Iterator for Clusters<'a> {
     }
 }
 
+/// Whether `text` is exactly one cell under `model`.
+///
+/// For [`CellModel::Legacy`](crate::CellModel::Legacy), cells follow
+/// `wcwidth()`-based applications (shells, editors): every character with a
+/// width above zero starts a new cell, and zero-width characters attach to the
+/// cell before them. So a subscript consonant, and on glibc a spacing vowel,
+/// get cells of their own. Renderers re-join such cells for shaping (see
+/// [`joins_next`]). Other models use KTE clusters.
+pub fn is_single_cluster(text: &str, model: crate::CellModel) -> bool {
+    match model {
+        crate::CellModel::Legacy(flavor) => text
+            .chars()
+            .skip(1)
+            .all(|c| crate::legacy_char_width(c, flavor) == 0),
+        _ => clusters(text).nth(1).is_none(),
+    }
+}
+
+/// Whether a cell holding `text` must be shaped together with the next cell,
+/// holding `next`, because they belong to one Khmer syllable: `next` starts
+/// with a dependent sign or COENG, or `text` ends with COENG and `next`
+/// starts with a consonant (a subscript).
+pub fn joins_next(text: &str, next: &str) -> bool {
+    let Some(first) = next.chars().next() else {
+        return false;
+    };
+    let dependent = matches!(
+        char_class(first),
+        CharClass::SpacingSign
+            | CharClass::NonSpacingSign
+            | CharClass::InherentVowel
+            | CharClass::Coeng
+    );
+    let starts_khmer = text.chars().next().is_some_and(crate::is_khmer);
+    starts_khmer && (dependent || (text.ends_with(COENG) && starts_with_consonant(next)))
+}
+
 fn starts_with_consonant(s: &str) -> bool {
     s.chars()
         .next()
@@ -122,6 +159,24 @@ mod tests {
     fn concatenation_is_lossless() {
         let s = "ការអភិវឌ្ឍកម្មវិធី\u{200B}ជាភាសាខ្មែរ 123 ✓";
         assert_eq!(split(s).concat(), s);
+    }
+
+    #[test]
+    fn legacy_cells_split_at_coeng() {
+        use crate::{CellModel, LegacyWidths};
+        let legacy = CellModel::Legacy(LegacyWidths::Glibc);
+        let glibc = CellModel::Legacy(LegacyWidths::Glibc);
+        let apple = CellModel::Legacy(LegacyWidths::Apple);
+        assert!(is_single_cluster("ស្", legacy));
+        assert!(!is_single_cluster("ស្ត", legacy));
+        assert!(is_single_cluster("ស្ត", CellModel::Wide));
+        // ា is width 1 on glibc (own cell) and 0 on Apple (attaches).
+        assert!(!is_single_cluster("កា", glibc));
+        assert!(is_single_cluster("កា", apple));
+        assert!(joins_next("ស្", "តី"));
+        assert!(joins_next("ក", "ា"));
+        assert!(!joins_next("ស", "ត"));
+        assert!(!joins_next("a", "ា"));
     }
 
     #[test]

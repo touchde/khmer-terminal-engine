@@ -20,6 +20,51 @@ pub enum CellModel {
     /// One cell per consonant: half-units rounded up per cluster. More compact,
     /// but syllables are less evenly spaced.
     Compact,
+    /// Compatibility with applications that measure text with the system's
+    /// per-codepoint `wcwidth()` (today's shells, editors and tmux). Not
+    /// derived from half-units; see [`legacy_char_width`].
+    Legacy(LegacyWidths),
+}
+
+/// Which system `wcwidth()` the [`CellModel::Legacy`] model reproduces. The
+/// two differ only for Khmer spacing signs (ា េ ោ ះ …).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum LegacyWidths {
+    /// GNU libc (Linux): spacing signs are 1 cell.
+    Glibc,
+    /// Apple libc (macOS, iOS): spacing signs are 0 cells.
+    Apple,
+}
+
+impl LegacyWidths {
+    /// The flavor of the platform this code was compiled for.
+    pub fn native() -> LegacyWidths {
+        if cfg!(target_vendor = "apple") {
+            LegacyWidths::Apple
+        } else {
+            LegacyWidths::Glibc
+        }
+    }
+}
+
+/// Width of one codepoint as the system `wcwidth()` reports it (negative
+/// values for control characters become 0).
+///
+/// Khmer bases are 1, subscript consonants are 1 (the preceding COENG is 0),
+/// non-spacing signs are 0, and spacing signs depend on `flavor`.
+pub fn legacy_char_width(c: char, flavor: LegacyWidths) -> usize {
+    match char_class(c) {
+        CharClass::Other => unicode_width::UnicodeWidthChar::width(c).unwrap_or(0),
+        CharClass::SpacingSign => match flavor {
+            LegacyWidths::Glibc => 1,
+            LegacyWidths::Apple => 0,
+        },
+        CharClass::NonSpacingSign
+        | CharClass::InherentVowel
+        | CharClass::Coeng
+        | CharClass::ZeroWidth => 0,
+        _ => 1,
+    }
 }
 
 /// Half-units of a base character (consonant, independent vowel, digit,
@@ -106,10 +151,14 @@ pub fn half_units(cluster: &str) -> Option<u32> {
 }
 
 /// Converts half-units to cells under `model`.
+///
+/// [`CellModel::Legacy`] widths are not derived from half-units; for it this
+/// returns the Compact value as an approximation. Use [`cluster_width`] for
+/// exact widths.
 pub fn cells_for_half_units(half_units: u32, model: CellModel) -> usize {
     match model {
         CellModel::Wide => half_units as usize,
-        CellModel::Compact => half_units.div_ceil(2) as usize,
+        CellModel::Compact | CellModel::Legacy(_) => half_units.div_ceil(2) as usize,
     }
 }
 
@@ -118,6 +167,9 @@ pub fn cells_for_half_units(half_units: u32, model: CellModel) -> usize {
 /// Khmer clusters follow the KTE rule. Other clusters keep their standard
 /// terminal width (UAX #11 via `unicode-width`): Latin 1, CJK 2, and so on.
 pub fn cluster_width(cluster: &str, model: CellModel) -> usize {
+    if let CellModel::Legacy(flavor) = model {
+        return cluster.chars().map(|c| legacy_char_width(c, flavor)).sum();
+    }
     match half_units(cluster) {
         Some(h) => cells_for_half_units(h, model),
         None => UnicodeWidthStr::width(cluster),
@@ -184,6 +236,18 @@ mod tests {
         assert_eq!(cluster_width("ក", CellModel::Compact), 1);
         assert_eq!(cluster_width("a", CellModel::Wide), 1);
         assert_eq!(cluster_width("中", CellModel::Wide), 2);
+    }
+
+    #[test]
+    fn legacy_matches_system_wcwidth() {
+        let glibc = CellModel::Legacy(LegacyWidths::Glibc);
+        let apple = CellModel::Legacy(LegacyWidths::Apple);
+        // ស 1 + ្ 0 + ត 1 + ី 0
+        assert_eq!(cluster_width("ស្តី", glibc), 2);
+        // ក 1 + ោ (Mc): 1 on glibc, 0 on Apple
+        assert_eq!(cluster_width("កោ", glibc), 2);
+        assert_eq!(cluster_width("កោ", apple), 1);
+        assert_eq!(str_width("ok 中", glibc), 5);
     }
 
     #[test]

@@ -116,6 +116,11 @@ impl Shaper {
         Ok(shaper)
     }
 
+    /// The underlying font, for drawing glyph outlines.
+    pub fn font(&self) -> &harfrust::Font {
+        &self.font
+    }
+
     /// The font's units per em.
     pub fn units_per_em(&self) -> u16 {
         self.units_per_em
@@ -186,14 +191,14 @@ impl Shaper {
     }
 
     /// Font size (in pixels per em) at which a typical consonant spans
-    /// `fill` × its cells: 2 cells in the Wide model, 1 in Compact.
+    /// `fill` × its cells: 2 cells in the Wide model, 1 in Compact and Legacy.
     ///
     /// `fill` below 1.0 leaves even spacing between syllables; 0.85–0.95 is a
     /// good range.
     pub fn font_size_for_cell(&self, cell_width_px: f32, model: CellModel, fill: f32) -> f32 {
         let cells_per_consonant = match model {
             CellModel::Wide => 2.0,
-            CellModel::Compact => 1.0,
+            CellModel::Compact | CellModel::Legacy(_) => 1.0,
         };
         cells_per_consonant * cell_width_px * fill * f32::from(self.units_per_em)
             / self.consonant_unit

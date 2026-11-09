@@ -31,7 +31,10 @@
         null
       ],
       "wide": 21,
-      "compact": 13
+      "compact": 13,
+      "legacy_glibc": 11,
+      "legacy_apple": 10,
+      "legacy_glibc_cells": 11
     },
     "note": "Greeting from the project brief"
   },
@@ -57,7 +60,10 @@
         1
       ],
       "wide": 11,
-      "compact": 7
+      "compact": 7,
+      "legacy_glibc": 8,
+      "legacy_apple": 5,
+      "legacy_glibc_cells": 8
     },
     "note": "Contains coeng + MO"
   },
@@ -103,7 +109,10 @@
         2
       ],
       "wide": 33,
-      "compact": 20
+      "compact": 20,
+      "legacy_glibc": 20,
+      "legacy_apple": 17,
+      "legacy_glibc_cells": 20
     },
     "note": "Several subscripts and coeng-RO"
   },
@@ -151,7 +160,10 @@
         1
       ],
       "wide": 33,
-      "compact": 21
+      "compact": 21,
+      "legacy_glibc": 23,
+      "legacy_apple": 18,
+      "legacy_glibc_cells": 23
     },
     "note": "Contains the ឍ subscript cluster"
   },
@@ -175,7 +187,10 @@
         3
       ],
       "wide": 9,
-      "compact": 5
+      "compact": 5,
+      "legacy_glibc": 6,
+      "legacy_apple": 5,
+      "legacy_glibc_cells": 6
     },
     "note": "Coeng-TA and pre-base vowel ៃ"
   },
@@ -203,7 +218,10 @@
         3
       ],
       "wide": 13,
-      "compact": 8
+      "compact": 8,
+      "legacy_glibc": 7,
+      "legacy_apple": 6,
+      "legacy_glibc_cells": 7
     },
     "note": "Coeng-TA followed by spacing vowel ា"
   },
@@ -223,7 +241,10 @@
         3
       ],
       "wide": 3,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 2,
+      "legacy_glibc_cells": 2
     },
     "note": "Subscript consonant"
   },
@@ -243,7 +264,10 @@
         3
       ],
       "wide": 3,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 2,
+      "legacy_glibc_cells": 2
     },
     "note": "Coeng-RO, drawn before the base"
   },
@@ -263,7 +287,10 @@
         4
       ],
       "wide": 4,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 2
     },
     "note": "Split vowel around the base"
   },
@@ -283,7 +310,10 @@
         3
       ],
       "wide": 3,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 2
     },
     "note": "Pre-base vowel"
   },
@@ -329,7 +359,10 @@
         null
       ],
       "wide": 21,
-      "compact": 17
+      "compact": 17,
+      "legacy_glibc": 18,
+      "legacy_apple": 15,
+      "legacy_glibc_cells": 18
     },
     "note": "Mixed Latin, Khmer and ASCII digits"
   },
@@ -367,7 +400,10 @@
         2
       ],
       "wide": 20,
-      "compact": 10
+      "compact": 10,
+      "legacy_glibc": 10,
+      "legacy_apple": 10,
+      "legacy_glibc_cells": 10
     },
     "note": "Khmer digits"
   },
@@ -463,7 +499,10 @@
         2
       ],
       "wide": 88,
-      "compact": 51
+      "compact": 51,
+      "legacy_glibc": 53,
+      "legacy_apple": 45,
+      "legacy_glibc_cells": 53
     },
     "note": "UDHR article 1, first sentence"
   },
@@ -603,7 +642,10 @@
         2
       ],
       "wide": 150,
-      "compact": 89
+      "compact": 89,
+      "legacy_glibc": 90,
+      "legacy_apple": 75,
+      "legacy_glibc_cells": 90
     },
     "note": "UDHR article 1, second sentence"
   },
@@ -665,7 +707,10 @@
         3
       ],
       "wide": 60,
-      "compact": 36
+      "compact": 36,
+      "legacy_glibc": 38,
+      "legacy_apple": 28,
+      "legacy_glibc_cells": 38
     },
     "note": "National motto"
   },
@@ -709,7 +754,10 @@
         2
       ],
       "wide": 37,
-      "compact": 21
+      "compact": 21,
+      "legacy_glibc": 23,
+      "legacy_apple": 15,
+      "legacy_glibc_cells": 23
     },
     "note": "Two-part vowel ៀ and sentence-final ។"
   },
@@ -729,7 +777,10 @@
         4
       ],
       "wide": 4,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 3,
+      "legacy_apple": 3,
+      "legacy_glibc_cells": 3
     },
     "note": "Two subscripts: coeng-TA and coeng-RO"
   },
@@ -749,7 +800,10 @@
         2
       ],
       "wide": 2,
-      "compact": 1
+      "compact": 1,
+      "legacy_glibc": 1,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 1
     },
     "note": "Dangling coeng at end of text"
   },
@@ -769,7 +823,10 @@
         3
       ],
       "wide": 3,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 2,
+      "legacy_glibc_cells": 2
     },
     "note": "Side-drawn subscript ្ស"
   },
@@ -789,7 +846,10 @@
         4
       ],
       "wide": 4,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 2
     },
     "note": "Two-part vowel ៅ"
   },
@@ -809,7 +869,10 @@
         4
       ],
       "wide": 4,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 2
     },
     "note": "Two-part vowel ឿ"
   },
@@ -829,7 +892,10 @@
         5
       ],
       "wide": 5,
-      "compact": 3
+      "compact": 3,
+      "legacy_glibc": 3,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 3
     },
     "note": "Two-part vowel + reahmuk ះ"
   },
@@ -849,7 +915,10 @@
         2
       ],
       "wide": 2,
-      "compact": 1
+      "compact": 1,
+      "legacy_glibc": 1,
+      "legacy_apple": 1,
+      "legacy_glibc_cells": 1
     },
     "note": "Non-spacing bantoc"
   },
@@ -869,7 +938,10 @@
         3
       ],
       "wide": 3,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 1,
+      "legacy_apple": 0,
+      "legacy_glibc_cells": 1
     },
     "note": "Spacing vowel with no base (dotted circle)"
   },
@@ -889,7 +961,10 @@
         2
       ],
       "wide": 2,
-      "compact": 1
+      "compact": 1,
+      "legacy_glibc": 0,
+      "legacy_apple": 0,
+      "legacy_glibc_cells": 1
     },
     "note": "Non-spacing vowel with no base (dotted circle)"
   },
@@ -1045,7 +1120,10 @@
         2
       ],
       "wide": 114,
-      "compact": 79
+      "compact": 79,
+      "legacy_glibc": 69,
+      "legacy_apple": 69,
+      "legacy_glibc_cells": 69
     },
     "note": "All 35 consonants"
   },
@@ -1117,7 +1195,10 @@
         2
       ],
       "wide": 42,
-      "compact": 28
+      "compact": 28,
+      "legacy_glibc": 27,
+      "legacy_apple": 27,
+      "legacy_glibc_cells": 27
     },
     "note": "Independent vowels"
   },
@@ -1165,7 +1246,10 @@
         1
       ],
       "wide": 27,
-      "compact": 18
+      "compact": 18,
+      "legacy_glibc": 15,
+      "legacy_apple": 15,
+      "legacy_glibc_cells": 15
     },
     "note": "Khmer punctuation and riel sign"
   },
@@ -1197,7 +1281,10 @@
         4
       ],
       "wide": 15,
-      "compact": 9
+      "compact": 9,
+      "legacy_glibc": 7,
+      "legacy_apple": 7,
+      "legacy_glibc_cells": 7
     },
     "note": "Lunar date symbols, narrow and wide"
   },
@@ -1221,7 +1308,10 @@
         2
       ],
       "wide": 4,
-      "compact": 2
+      "compact": 2,
+      "legacy_glibc": 2,
+      "legacy_apple": 2,
+      "legacy_glibc_cells": 2
     },
     "note": "Zero-width space between words"
   },
@@ -1279,7 +1369,10 @@
         null
       ],
       "wide": 27,
-      "compact": 23
+      "compact": 23,
+      "legacy_glibc": 24,
+      "legacy_apple": 21,
+      "legacy_glibc_cells": 24
     },
     "note": "Khmer inside a shell command"
   },
@@ -1307,7 +1400,10 @@
         1
       ],
       "wide": 9,
-      "compact": 8
+      "compact": 8,
+      "legacy_glibc": 9,
+      "legacy_apple": 8,
+      "legacy_glibc_cells": 7
     },
     "note": "CJK next to Khmer"
   },
@@ -1337,7 +1433,10 @@
         2
       ],
       "wide": 7,
-      "compact": 6
+      "compact": 6,
+      "legacy_glibc": 6,
+      "legacy_apple": 6,
+      "legacy_glibc_cells": 6
     },
     "note": "Latin with combining acute accent"
   },
@@ -1371,7 +1470,10 @@
         1
       ],
       "wide": 13,
-      "compact": 8
+      "compact": 8,
+      "legacy_glibc": 8,
+      "legacy_apple": 8,
+      "legacy_glibc_cells": 8
     },
     "note": "Khmer digits with riel sign"
   }

@@ -19,11 +19,13 @@ mod segment;
 mod width;
 
 pub use class::{COENG, CharClass, char_class, is_khmer};
-pub use segment::{Clusters, cluster_start, clusters, next_boundary, prev_boundary};
+pub use segment::{
+    Clusters, cluster_start, clusters, is_single_cluster, joins_next, next_boundary, prev_boundary,
+};
 pub use width::{
-    CellModel, base_half_units, cells_for_half_units, cluster_width, half_units, is_zero_width,
-    spacing_sign_half_units, str_width, subscript_half_units,
+    CellModel, LegacyWidths, base_half_units, cells_for_half_units, cluster_width, half_units,
+    is_zero_width, legacy_char_width, spacing_sign_half_units, str_width, subscript_half_units,
 };
 
 /// Version of the KTE Width Spec this crate implements.
-pub const SPEC_VERSION: &str = "0.1.0";
+pub const SPEC_VERSION: &str = "0.2.0";

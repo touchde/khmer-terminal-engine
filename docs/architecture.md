@@ -18,7 +18,7 @@ kte-terminal  kte-shaper   kte-cell      kte-unicode
                                      (everything depends on it)
 
 kte-capi ── C ABI over kte-core (native terminals; WebAssembly)
-kte-term ── the standalone terminal app (Phase 2)
+kte-term ── the standalone terminal app: window, pty, CPU renderer
 ```
 
 | Crate | Depends on | Responsibility |
@@ -50,6 +50,15 @@ application ──bytes──▶ PTY ──▶ Terminal::feed ──▶ grid of 
 5. **Fit.** `kte_cell::fit` centers or compresses each cluster's glyphs within its cells. Glyphs are not clipped vertically.
 6. **Select.** `Terminal::selection_text` snaps to whole clusters and returns the stored text, so copy/paste preserves the original codepoints.
 
+## Cell models in the terminal
+
+| Model | What a cell holds | Who it suits |
+|-------|-------------------|--------------|
+| Wide / Compact | A whole KTE cluster (a syllable with its subscripts) | Apps that follow the spec |
+| Legacy | One character wider than zero, plus the zero-width characters after it, exactly as `wcwidth()`-based apps see it | Today's shells and editors |
+
+In the Legacy model a syllable can span several cells (ស្ | តី). The renderer joins such cells back together (`kte_unicode::joins_next`) and shapes them as one syllable, so storage follows the application while rendering follows Khmer.
+
 ## Testing layers
 
 | Layer | What it checks |
@@ -60,3 +69,4 @@ application ──bytes──▶ PTY ──▶ Terminal::feed ──▶ grid of 
 | `kte-shaper` tests | Spec widths track real advances in an installed Khmer font. |
 | `examples/c/demo.c` | The C header and static library link and work from C. |
 | `tests/wasm/smoke.mjs` | The WebAssembly build works from JavaScript. |
+| `kte-term --snapshot` in CI | The app renders on Linux, macOS and Windows, and a live bash session accepts typed Khmer. |

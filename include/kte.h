@@ -10,8 +10,9 @@
  *  - Functions returning text copy at most `buf_len` bytes into `buf` (no NUL
  *    terminator) and return the full length. Pass buf = NULL, buf_len = 0 to
  *    query the length first.
- *  - Cell model: KTE_MODEL_WIDE (2 cells per typical consonant, default) or
- *    KTE_MODEL_COMPACT (1 cell per consonant). See spec/kte-width-spec.md.
+ *  - Cell model: KTE_MODEL_WIDE (2 cells per typical consonant, default),
+ *    KTE_MODEL_COMPACT (1 cell per consonant), or KTE_MODEL_LEGACY_* (matches
+ *    the system wcwidth() that unmodified apps use). See spec/kte-width-spec.md.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -28,6 +29,10 @@ extern "C" {
 #define KTE_INVALID ((size_t)-1)
 #define KTE_MODEL_WIDE 0u
 #define KTE_MODEL_COMPACT 1u
+/* Compatibility with today's apps, which measure with the system wcwidth(). */
+#define KTE_MODEL_LEGACY_GLIBC 2u  /* Linux: Khmer spacing signs are 1 cell */
+#define KTE_MODEL_LEGACY_APPLE 3u  /* macOS: Khmer spacing signs are 0 cells */
+#define KTE_MODEL_LEGACY_NATIVE 4u /* whichever matches this platform */
 
 typedef struct KteTerminal KteTerminal;
 

@@ -10,7 +10,9 @@
 ការអភិវឌ្ឍកម្មវិធីជាភាសាខ្មែរ
 ```
 
-> **Status: pre-alpha.** The [width spec](spec/kte-width-spec.md) (v0.1 draft) and the core libraries (Phase 1) are implemented and tested. The standalone terminal (Phase 2) is next.
+> **Status: pre-alpha.** The [width spec](spec/kte-width-spec.md) (v0.2 draft) and the core libraries are implemented and tested. The standalone terminal [`kte-term`](apps/kte-term) runs your shell with correct Khmer rendering (MVP).
+
+![kte-term rendering Khmer](docs/images/model-wide.png)
 
 ## The problem
 
@@ -74,6 +76,9 @@ Requires a stable Rust toolchain (MSRV 1.85).
 cargo build
 cargo test
 
+# The terminal
+cargo run -p kte-term --release
+
 # C library and demo
 cargo build -p kte-capi --release
 cc examples/c/demo.c -Iinclude target/release/libkte_capi.a -o kte-demo && ./kte-demo
@@ -93,7 +98,7 @@ cargo run -p kte-measure --release -- /path/to/fonts
 |-------|-------------|--------|
 | 0 | KTE Width Spec v0 + conformance corpus | 🟡 v0.1 draft; needs native review, more fonts and corpus |
 | 1 | Core crates (Rust, C ABI, WASM) | ✅ done |
-| 2 | `kte-term` MVP (macOS first, then Windows and Linux) | ⬜ next |
+| 2 | `kte-term` MVP (macOS first, then Windows and Linux) | 🟡 MVP works; scrollback view, font fallback and packaging next |
 | 3 | xterm.js addon → VS Code | ⬜ |
 | 4 | Native terminals (WezTerm → Ghostty → Windows Terminal → others) | ⬜ |
 | 5 | Width libraries, shells, tmux | ⬜ |

@@ -120,6 +120,20 @@ pub struct Fit {
 /// assert_eq!((f.scale_x, f.offset_x), (0.8, 0.0));
 /// ```
 pub fn fit(advance_px: f32, cells: usize, cell_px: f32) -> Fit {
+    fit_with_stretch(advance_px, cells, cell_px, 1.0)
+}
+
+/// Like [`fit`], but a cluster narrower than its box is first stretched
+/// horizontally by up to `max_stretch` (e.g. 1.15), then centered. This
+/// reduces the gaps around narrow syllables when the cell model gives them
+/// more room than they need (as the Legacy model does for subscripts).
+///
+/// ```
+/// use kte_cell::fit_with_stretch;
+/// let f = fit_with_stretch(10.0, 2, 8.0, 1.2); // 16 px box: stretch to 12 px
+/// assert_eq!((f.scale_x, f.offset_x), (1.2, 2.0));
+/// ```
+pub fn fit_with_stretch(advance_px: f32, cells: usize, cell_px: f32, max_stretch: f32) -> Fit {
     let box_px = cells as f32 * cell_px;
     if advance_px <= 0.0 || box_px <= 0.0 {
         return Fit {
@@ -128,9 +142,10 @@ pub fn fit(advance_px: f32, cells: usize, cell_px: f32) -> Fit {
         };
     }
     if advance_px <= box_px {
+        let scale_x = (box_px / advance_px).min(max_stretch.max(1.0));
         Fit {
-            scale_x: 1.0,
-            offset_x: (box_px - advance_px) / 2.0,
+            scale_x,
+            offset_x: (box_px - advance_px * scale_x) / 2.0,
         }
     } else {
         Fit {

@@ -11,7 +11,13 @@ authors.workspace = true
 publish = false
 
 [dependencies]
+arboard = { version = "3", default-features = false }
+harfrust.workspace = true
 kte-core.workspace = true
+portable-pty = "0.9"
+softbuffer = "0.4"
+tiny-skia = "0.11"
+winit = { version = "0.30", default-features = false, features = ["rwh_06", "x11", "wayland", "wayland-dlopen", "wayland-csd-adwaita-notitle"] }
 
 [lints]
 workspace = true

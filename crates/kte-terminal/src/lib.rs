@@ -20,7 +20,7 @@ mod grid;
 
 use std::mem;
 
-use kte_unicode::{CellModel, cluster_width, clusters};
+use kte_unicode::{CellModel, cluster_width, is_single_cluster};
 
 pub use grid::{Attrs, Cell, Color, Row};
 
@@ -61,6 +61,8 @@ struct State {
     scroll_bottom: usize,
     autowrap: bool,
     cursor_visible: bool,
+    app_cursor_keys: bool,
+    bracketed_paste: bool,
     /// Start of the last printed cluster, which later codepoints may extend.
     last: Option<(usize, usize)>,
     title: String,
@@ -91,6 +93,8 @@ impl Terminal {
                 scroll_bottom: rows - 1,
                 autowrap: true,
                 cursor_visible: true,
+                app_cursor_keys: false,
+                bracketed_paste: false,
                 last: None,
                 title: String::new(),
                 responses: Vec::new(),
@@ -140,6 +144,18 @@ impl Terminal {
     /// Whether the cursor should be drawn (DECTCEM).
     pub fn cursor_visible(&self) -> bool {
         self.state.cursor_visible
+    }
+
+    /// Whether arrow keys should send application sequences (`ESC O A`)
+    /// instead of normal ones (`ESC [ A`) (DECCKM, mode 1).
+    pub fn app_cursor_keys(&self) -> bool {
+        self.state.app_cursor_keys
+    }
+
+    /// Whether pasted text should be wrapped in `ESC [200~` … `ESC [201~`
+    /// (mode 2004).
+    pub fn bracketed_paste(&self) -> bool {
+        self.state.bracketed_paste
     }
 
     /// Window title set with OSC 0 or OSC 2.
@@ -345,7 +361,7 @@ impl State {
             if self.cursor_follows(row, col) {
                 let mut combined = self.grid[row].cells[col].text.clone();
                 combined.push(c);
-                if clusters(&combined).nth(1).is_none() {
+                if is_single_cluster(&combined, self.model) {
                     self.replace_last(row, col, combined);
                     return;
                 }
@@ -541,7 +557,9 @@ impl State {
 
     fn set_private_mode(&mut self, mode: u16, on: bool) {
         match mode {
+            1 => self.app_cursor_keys = on,
             7 => self.autowrap = on,
+            2004 => self.bracketed_paste = on,
             25 => self.cursor_visible = on,
             47 | 1047 | 1049 => self.set_alt_screen(on),
             // Mode 2027 is always on: KTE always measures whole clusters.
@@ -551,31 +569,16 @@ impl State {
 
     fn private_mode_state(&self, mode: u16) -> u8 {
         // DECRPM values: 1 = set, 2 = reset, 3 = permanently set, 0 = unknown.
-        match mode {
-            7 => {
-                if self.autowrap {
-                    1
-                } else {
-                    2
-                }
-            }
-            25 => {
-                if self.cursor_visible {
-                    1
-                } else {
-                    2
-                }
-            }
-            1049 => {
-                if self.alt_grid.is_some() {
-                    1
-                } else {
-                    2
-                }
-            }
-            MODE_GRAPHEME_CLUSTERS => 3,
-            _ => 0,
-        }
+        let flag = match mode {
+            1 => self.app_cursor_keys,
+            7 => self.autowrap,
+            25 => self.cursor_visible,
+            1049 => self.alt_grid.is_some(),
+            2004 => self.bracketed_paste,
+            MODE_GRAPHEME_CLUSTERS => return 3,
+            _ => return 0,
+        };
+        if flag { 1 } else { 2 }
     }
 
     fn sgr(&mut self, params: &vte::Params) {

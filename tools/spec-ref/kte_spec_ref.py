@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent reference implementation of the KTE Width Spec (v0.1.0).
+"""Independent reference implementation of the KTE Width Spec (v0.2.0).
 
 Written directly from spec/kte-width-spec.md, without looking at the Rust code,
 so that the two implementations can check each other. It fills in the
@@ -134,6 +134,28 @@ def width(cluster, model):
     return h if model == "wide" else math.ceil(h / 2)
 
 
+# --- Spec §6.2: Legacy model (system wcwidth() compatibility) ----------------
+def legacy_char_width(c, flavor):
+    if is_khmer(c):
+        if c in SPACING_HALF:
+            return 1 if flavor == "glibc" else 0
+        if c in NON_SPACING or c in INHERENT or c == COENG:
+            return 0
+        return 1
+    return uax11(c)
+
+
+def legacy_cells(text, flavor):
+    """Cells as wcwidth()-based apps see them: a character wider than zero starts a cell."""
+    cells = []
+    for c in text:
+        if cells and legacy_char_width(c, flavor) == 0:
+            cells[-1] += c
+        else:
+            cells.append(c)
+    return cells
+
+
 def expected(text):
     clusters = segment(text)
     assert "".join(clusters) == text
@@ -142,6 +164,9 @@ def expected(text):
         "half_units": [half_units(c) for c in clusters],
         "wide": sum(width(c, "wide") for c in clusters),
         "compact": sum(width(c, "compact") for c in clusters),
+        "legacy_glibc": sum(legacy_char_width(c, "glibc") for c in text),
+        "legacy_apple": sum(legacy_char_width(c, "apple") for c in text),
+        "legacy_glibc_cells": len(legacy_cells(text, "glibc")),
     }
 
 

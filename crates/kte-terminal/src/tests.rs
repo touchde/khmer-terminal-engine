@@ -257,3 +257,28 @@ fn every_corpus_line_round_trips_through_the_grid() {
         );
     }
 }
+
+#[test]
+fn input_modes() {
+    let mut t = term(1, 10);
+    assert!(!t.app_cursor_keys() && !t.bracketed_paste());
+    feed(&mut t, "\x1b[?1h\x1b[?2004h");
+    assert!(t.app_cursor_keys() && t.bracketed_paste());
+    feed(&mut t, "\x1b[?2004$p");
+    assert_eq!(t.take_responses(), b"\x1b[?2004;1$y");
+    feed(&mut t, "\x1b[?1l\x1b[?2004l");
+    assert!(!t.app_cursor_keys() && !t.bracketed_paste());
+}
+
+#[test]
+fn legacy_model_matches_wcwidth_apps_cell_by_cell() {
+    use kte_unicode::LegacyWidths;
+    // zsh redraws a subscript's cell on its own: ស្ in one cell, then it moves
+    // back and reprints "តី" in the next cell. Nothing may be erased.
+    let mut t = Terminal::new(1, 20, CellModel::Legacy(LegacyWidths::Glibc));
+    feed(&mut t, "ស្ត");
+    assert_eq!(t.cursor(), (0, 2));
+    feed(&mut t, "\x08តី");
+    assert_eq!(t.row_text(0), "ស្តី");
+    assert_eq!(cells(&t, 0), [("ស្".into(), 1), ("តី".into(), 1)]);
+}

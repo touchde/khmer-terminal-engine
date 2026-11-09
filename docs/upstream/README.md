@@ -28,7 +28,7 @@ Always attach ucs-detect results and screenshots to upstream issues, and link th
 | string-width | JavaScript | — | — | Not started |
 | go-runewidth | Go | — | — | Not started |
 | tmux | C | — | — | Not started |
-| zsh | C | — | — | Not started |
+| zsh | C | — | — | Not started. `COMBINING_CHARS` is off by default, so Khmer signs show as `<17d2>` (Research 0003) |
 | bash / readline | C | — | — | Not started |
 | fish | Rust | — | — | Not started |
 
