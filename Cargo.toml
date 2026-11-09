@@ -1,0 +1,32 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/kte-term"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/touchde/khmer-terminal-engine"
+homepage = "https://github.com/touchde/khmer-terminal-engine"
+authors = ["Den TOUCH", "Khmer Terminal Engine contributors"]
+keywords = ["khmer", "unicode", "terminal", "shaping", "text"]
+categories = ["text-processing", "internationalization", "command-line-interface"]
+
+[workspace.dependencies]
+kte-unicode = { path = "crates/kte-unicode", version = "0.0.0" }
+kte-shaper = { path = "crates/kte-shaper", version = "0.0.0" }
+kte-cell = { path = "crates/kte-cell", version = "0.0.0" }
+kte-terminal = { path = "crates/kte-terminal", version = "0.0.0" }
+kte-core = { path = "crates/kte-core", version = "0.0.0" }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

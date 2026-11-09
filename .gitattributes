@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.rs   text diff=rust
+*.md   text diff=markdown
+*.json text
+*.png  binary
+*.ttf  binary
+*.otf  binary

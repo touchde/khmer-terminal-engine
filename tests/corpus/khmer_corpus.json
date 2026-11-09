@@ -1,0 +1,170 @@
+[
+  {
+    "id": "word-0001",
+    "category": "word",
+    "text": "សួស្តី ពិភពលោក!",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Greeting from the project brief"
+  },
+  {
+    "id": "word-0002",
+    "category": "word",
+    "text": "ភាសាខ្មែរ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Contains coeng + MO"
+  },
+  {
+    "id": "sentence-0001",
+    "category": "sentence",
+    "text": "ខ្ញុំស្រឡាញ់ការសរសេរកម្មវិធី",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Several subscripts and coeng-RO"
+  },
+  {
+    "id": "sentence-0002",
+    "category": "sentence",
+    "text": "ការអភិវឌ្ឍកម្មវិធីជាភាសាខ្មែរ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Contains the ឍ subscript cluster"
+  },
+  {
+    "id": "word-0003",
+    "category": "word",
+    "text": "ក្តីស្រមៃ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Coeng-TA and pre-base vowel ៃ"
+  },
+  {
+    "id": "word-0004",
+    "category": "word",
+    "text": "សក្តានុពល",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Coeng-TA followed by spacing vowel ា"
+  },
+  {
+    "id": "coeng-0001",
+    "category": "coeng",
+    "text": "ស្ត",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Subscript consonant"
+  },
+  {
+    "id": "coeng-0002",
+    "category": "coeng",
+    "text": "ក្រ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Coeng-RO, drawn before the base"
+  },
+  {
+    "id": "dependent-vowel-0001",
+    "category": "dependent-vowel",
+    "text": "កោ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Split vowel around the base"
+  },
+  {
+    "id": "dependent-vowel-0002",
+    "category": "dependent-vowel",
+    "text": "កេ",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Pre-base vowel"
+  },
+  {
+    "id": "mixed-0001",
+    "category": "mixed",
+    "text": "Hello ភាសាខ្មែរ 123",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Mixed Latin, Khmer and ASCII digits"
+  },
+  {
+    "id": "numeral-0001",
+    "category": "numeral",
+    "text": "០១២៣៤៥៦៧៨៩",
+    "spec": [
+      "width",
+      "segmentation"
+    ],
+    "expected": {
+      "width": null,
+      "clusters": null
+    },
+    "note": "Khmer digits"
+  }
+]

@@ -1,0 +1,22 @@
+name: Width spec change
+description: Propose a change to the KTE Width Spec
+labels: [spec]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Which text gets the wrong width under the current rule? Include examples and screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed rule
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Compatibility impact
+      description: Which existing corpus cases or implementations would change?

@@ -1,0 +1,29 @@
+[package]
+name = "kte-capi"
+description = "C ABI for embedding KTE in native terminals (C, C++, Swift, Zig)."
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib", "staticlib"]
+
+[dependencies]
+kte-core.workspace = true
+
+# The C ABI needs `unsafe`, so it cannot inherit the workspace `unsafe_code = "deny"`.
+[lints.rust]
+unsafe_code = "allow"
+unsafe_op_in_unsafe_fn = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+undocumented_unsafe_blocks = "deny"
