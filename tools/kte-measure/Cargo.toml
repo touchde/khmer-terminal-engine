@@ -13,4 +13,5 @@ workspace = true
 
 [dependencies]
 harfrust.workspace = true
+kte-unicode.workspace = true
 read-fonts.workspace = true

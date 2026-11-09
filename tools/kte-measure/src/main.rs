@@ -432,6 +432,10 @@ fn rules(d: &Derived) -> Vec<Rule> {
             name: "I. Everything measured, half cells (×2)",
             width: measured(true, |x| 2.0 * x),
         },
+        Rule {
+            name: "**S. KTE Width Spec (Wide), fixed table**",
+            width: Box::new(|s| kte_unicode::half_units(s).unwrap_or(0) as f32),
+        },
     ]
 }
 
@@ -526,6 +530,40 @@ fn report(all: &[Metrics], scanned: usize, syllables: &[String]) {
     }
     for (c, w) in derived.subscript.iter().filter(|(_, w)| **w != 0.0) {
         println!("| ◌្{c} coeng + U+{:04X} | {w} |", *c as u32);
+    }
+
+    println!(
+        "\n## 3b. Differences from the KTE Width Spec {}\n",
+        kte_unicode::SPEC_VERSION
+    );
+    println!(
+        "Where these fonts' derived value (in half-units) differs from the spec's fixed table. \
+         Rules D–I above re-derive their tables from these fonts; rule S uses the spec as published.\n"
+    );
+    let mut diffs = Vec::new();
+    for (c, w) in &derived.base {
+        let spec = kte_unicode::base_half_units(*c);
+        diffs.push((format!("{c} U+{:04X} (base)", *c as u32), *w, spec));
+    }
+    for (c, w) in &derived.spacing {
+        let spec = kte_unicode::spacing_sign_half_units(*c);
+        diffs.push((format!("◌{c} U+{:04X}", *c as u32), *w, spec));
+    }
+    for (c, w) in &derived.subscript {
+        let spec = kte_unicode::subscript_half_units(*c);
+        diffs.push((format!("◌្{c} coeng + U+{:04X}", *c as u32), *w, spec));
+    }
+    let diffs: Vec<_> = diffs
+        .into_iter()
+        .filter(|(_, w, spec)| (w * 2.0).round() as u32 != *spec)
+        .collect();
+    if diffs.is_empty() {
+        println!("None: the fonts measured here agree with the spec table.");
+    } else {
+        println!("| Codepoint | These fonts | Spec |\n|---|---|---|");
+        for (label, w, spec) in diffs {
+            println!("| {label} | {} | {spec} |", (w * 2.0).round() as u32);
+        }
     }
 
     println!("\n## 4. Candidate rules, evaluated syllable by syllable\n");
