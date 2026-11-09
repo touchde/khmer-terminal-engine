@@ -79,6 +79,9 @@ const COMMON_FONTS: &[&str] = &[
     "Khmer MN",
     "Leelawadee UI",
     "Khmer UI",
+    "Khmer UI Bold",
+    "Noto Sans Khmer Regular",
+    "Khmer OS System Regular",
     "DaunPenh",
     "MoolBoran",
 ];

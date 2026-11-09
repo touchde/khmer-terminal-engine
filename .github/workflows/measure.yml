@@ -1,0 +1,41 @@
+name: Measure fonts
+
+# Runs tools/kte-measure on the Khmer fonts that ship with Windows and common
+# Linux distributions, to extend Research 0001 beyond macOS. Start it from the
+# Actions tab or with `gh workflow run measure.yml`.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: measure (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Linux Khmer fonts
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-khmeros fonts-noto-core
+      - name: Measure (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: cargo run -p kte-measure --release -- "C:/Windows/Fonts" > report.md
+      - name: Measure (Linux)
+        if: runner.os == 'Linux'
+        run: cargo run -p kte-measure --release -- /usr/share/fonts > report.md
+      - name: Publish report
+        shell: bash
+        run: cat report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: measurements-${{ matrix.os }}
+          path: report.md
