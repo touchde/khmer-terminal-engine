@@ -172,7 +172,38 @@ pub struct Renderer {
     baseline: f32,
     glyphs: GlyphCache,
     shaped: HashMap<String, Rc<Shaped>>,
+    /// Left edge of every column, per row, from the last frame (`cols + 1`
+    /// entries per row, relative to the padding).
+    row_xs: Vec<Vec<f32>>,
 }
+
+/// One drawable unit of a row, in column order.
+enum Unit {
+    /// A cell the application never wrote. It gives up its width when the
+    /// text before it needs room.
+    Empty,
+    /// A non-Khmer cluster, drawn at its grid width.
+    Fixed { text: String, cells: usize, fg: u32 },
+    /// A Khmer word: consecutive Khmer cells of one color, shaped together.
+    Khmer {
+        text: String,
+        cells: usize,
+        fg: u32,
+        natural: f32,
+    },
+}
+
+impl Unit {
+    fn cells(&self) -> usize {
+        match self {
+            Unit::Empty => 1,
+            Unit::Fixed { cells, .. } | Unit::Khmer { cells, .. } => *cells,
+        }
+    }
+}
+
+/// Where each unit of a row goes: `(column, unit, x, width)`.
+type Placed = Vec<(usize, Unit, f32, f32)>;
 
 /// Font sizing options.
 #[derive(Clone, Copy)]
@@ -202,6 +233,7 @@ impl Renderer {
             baseline: 0.0,
             glyphs: GlyphCache::default(),
             shaped: HashMap::new(),
+            row_xs: Vec::new(),
         };
         r.resize_fonts(sizing);
         r
@@ -244,11 +276,20 @@ impl Renderer {
         )
     }
 
-    /// Grid cell under a pixel position, clamped to the grid.
+    /// Grid cell under a pixel position, clamped to the grid. Uses the
+    /// layout of the last frame, where Khmer words may have moved text.
     pub fn cell_at(&self, term: &Terminal, x: f64, y: f64) -> (usize, usize) {
-        let col = ((x - f64::from(self.padding)) / f64::from(self.cell_width)).max(0.0) as usize;
         let row = ((y - f64::from(self.padding)) / f64::from(self.cell_height)).max(0.0) as usize;
-        (row.min(term.rows() - 1), col.min(term.cols() - 1))
+        let row = row.min(term.rows() - 1);
+        let x = (x - f64::from(self.padding)) as f32;
+        let col = match self.row_xs.get(row) {
+            Some(xs) if xs.len() > 1 => xs[1..]
+                .iter()
+                .position(|edge| x < *edge)
+                .unwrap_or(xs.len() - 2),
+            _ => (x / self.cell_width as f32).max(0.0) as usize,
+        };
+        (row, col.min(term.cols() - 1))
     }
 
     fn shape(&mut self, text: &str) -> Rc<Shaped> {
@@ -279,18 +320,139 @@ impl Renderer {
             glyphs,
             advance_px: advance as f32 * px / upem,
         });
+        if self.shaped.len() > 4096 {
+            self.shaped.clear();
+        }
         self.shaped.insert(text.to_owned(), shaped.clone());
         shaped
+    }
+
+    /// Splits a row into units: empty cells, non-Khmer clusters, and Khmer
+    /// words (cells joined while they stay Khmer and keep one color).
+    fn units(&mut self, term: &Terminal, row: usize) -> Vec<(usize, Unit)> {
+        let khmer = |t: &str| t.chars().next().is_some_and(kte_core::unicode::is_khmer);
+        let mut out = Vec::new();
+        let mut col = 0;
+        while col < term.cols() {
+            let cell = term.cell(row, col);
+            if cell.is_continuation() {
+                col += 1;
+                continue;
+            }
+            if cell.text.is_empty() {
+                out.push((col, Unit::Empty));
+                col += 1;
+                continue;
+            }
+            let (fg, _) = self.theme.cell_colors(&cell.attrs);
+            let mut text = cell.text.clone();
+            let mut cells = cell.width.max(1) as usize;
+            while col + cells < term.cols() {
+                let next = term.cell(row, col + cells);
+                if next.width == 0 || next.text.is_empty() {
+                    break;
+                }
+                let same_word = khmer(&text)
+                    && khmer(&next.text)
+                    && self.theme.cell_colors(&next.attrs).0 == fg;
+                if !same_word && !kte_core::unicode::joins_next(&text, &next.text) {
+                    break;
+                }
+                text.push_str(&next.text);
+                cells += next.width as usize;
+            }
+            let shaped = self.shape(&text);
+            let unit = if shaped.face == KHMER {
+                Unit::Khmer {
+                    text,
+                    cells,
+                    fg,
+                    natural: shaped.advance_px,
+                }
+            } else {
+                Unit::Fixed { text, cells, fg }
+            };
+            out.push((col, unit));
+            col += cells;
+        }
+        out
+    }
+
+    /// Lays a row out in pixels. Text starts at its grid position unless the
+    /// text before it needs the room; Khmer words keep their natural width,
+    /// scaled by `k`. Returns the placement, the column edges, and where the
+    /// last non-empty unit ends.
+    fn place(units: Vec<(usize, Unit)>, cols: usize, cw: f32, k: f32) -> (Placed, Vec<f32>, f32) {
+        let mut xs = vec![0.0f32; cols + 1];
+        let mut placed = Vec::with_capacity(units.len());
+        let (mut pen, mut content_end) = (0.0f32, 0.0f32);
+        for (col, unit) in units {
+            let grid = col as f32 * cw;
+            let x = grid.max(pen);
+            let cells = unit.cells();
+            let w = match &unit {
+                Unit::Empty => (grid + cw - x).max(0.0),
+                Unit::Fixed { cells, .. } => *cells as f32 * cw,
+                Unit::Khmer { natural, .. } => natural * k,
+            };
+            // Columns inside the unit share its width evenly; a unit narrower
+            // than its grid cells (other than an empty one) keeps the grid.
+            let span = match unit {
+                Unit::Empty => w,
+                _ => w.max(cells as f32 * cw),
+            };
+            for i in 0..cells {
+                if let Some(edge) = xs.get_mut(col + i) {
+                    *edge = x + span * i as f32 / cells as f32;
+                }
+            }
+            pen = x + w;
+            if !matches!(unit, Unit::Empty) {
+                content_end = content_end.max(pen);
+            }
+            placed.push((col, unit, x, w));
+        }
+        xs[cols] = pen.max(cols as f32 * cw);
+        (placed, xs, content_end)
+    }
+
+    /// Lays out a row, compressing its Khmer words by one shared factor if
+    /// the line would otherwise run past the window.
+    fn layout_row(&mut self, term: &Terminal, row: usize) -> (Placed, Vec<f32>) {
+        let cw = self.cell_width as f32;
+        let limit = term.cols() as f32 * cw;
+        let units = self.units(term, row);
+        let khmer_total: f32 = units
+            .iter()
+            .map(|(_, u)| {
+                if let Unit::Khmer { natural, .. } = u {
+                    *natural
+                } else {
+                    0.0
+                }
+            })
+            .sum();
+        let (placed, xs, end) = Self::place(units, term.cols(), cw, 1.0);
+        if end <= limit + 0.5 || khmer_total <= 0.0 {
+            return (placed, xs);
+        }
+        let k = ((limit - (end - khmer_total)) / khmer_total).clamp(0.4, 1.0);
+        let units = placed.into_iter().map(|(c, u, _, _)| (c, u)).collect();
+        let (placed, xs, _) = Self::place(units, term.cols(), cw, k);
+        (placed, xs)
     }
 
     pub fn render(&mut self, term: &Terminal, frame: &mut Frame, overlay: Overlay) {
         let bg = self.theme.background;
         frame.pixels.fill(bg);
         let (cw, ch, pad) = (
-            self.cell_width as i32,
+            self.cell_width as f32,
             self.cell_height as i32,
-            self.padding as i32,
+            self.padding as f32,
         );
+        let layouts: Vec<(Placed, Vec<f32>)> = (0..term.rows())
+            .map(|row| self.layout_row(term, row))
+            .collect();
         let cursor = term.cursor();
         let cursor_span = term.cluster_span(cursor.0, cursor.1);
         let show_cursor = term.cursor_visible();
@@ -300,9 +462,9 @@ impl Renderer {
                 .is_some_and(|(a, b)| (row, col) >= a && (row, col) <= b)
         };
 
-        // Pass 1: backgrounds, selection, cursor block.
-        for row in 0..term.rows() {
-            let y = pad + row as i32 * ch;
+        // Pass 1: backgrounds, selection, cursor block (all following the layout).
+        for (row, (_, xs)) in layouts.iter().enumerate() {
+            let y = pad as i32 + row as i32 * ch;
             for col in 0..term.cols() {
                 let cell = term.cell(row, col);
                 let (_, mut cell_bg) = self.theme.cell_colors(&cell.attrs);
@@ -310,14 +472,17 @@ impl Renderer {
                     cell_bg = self.theme.selection;
                 }
                 if cell_bg != bg {
-                    frame.fill(pad + col as i32 * cw, y, cw, ch, cell_bg);
+                    let (x0, x1) = (xs[col].round() as i32, xs[col + 1].round() as i32);
+                    frame.fill(pad as i32 + x0, y, (x1 - x0).max(1), ch, cell_bg);
                 }
             }
         }
         if show_cursor {
-            let x = pad + cursor_span.start as i32 * cw;
-            let y = pad + cursor.0 as i32 * ch;
-            let w = cursor_span.len() as i32 * cw;
+            let xs = &layouts[cursor.0].1;
+            let x0 = xs[cursor_span.start.min(term.cols())];
+            let x1 = xs[cursor_span.end.min(term.cols())].max(x0 + cw);
+            let (x, w) = ((pad + x0).round() as i32, (x1 - x0).round() as i32);
+            let y = pad as i32 + cursor.0 as i32 * ch;
             if overlay.focused {
                 frame.fill(x, y, w, ch, self.theme.cursor);
                 frame.inverse = Some(((x, y, x + w, y + ch), self.theme.background));
@@ -330,51 +495,48 @@ impl Renderer {
             }
         }
 
-        // Pass 2: glyphs. Neighboring cells that belong to one Khmer syllable
-        // (split by wcwidth-based apps in the Legacy model) are shaped together.
-        for row in 0..term.rows() {
-            let baseline = pad as f32 + row as f32 * ch as f32 + self.baseline;
-            let mut col = 0;
-            while col < term.cols() {
-                let cell = term.cell(row, col);
-                if cell.is_continuation() || cell.text.is_empty() {
-                    col += 1;
-                    continue;
-                }
-                let start = col;
-                let mut text = cell.text.clone();
-                let mut width = cell.width as usize;
-                while start + width < term.cols() {
-                    let next = term.cell(row, start + width);
-                    if next.width == 0 || !kte_core::unicode::joins_next(&text, &next.text) {
-                        break;
+        // Pass 2: glyphs.
+        self.row_xs.clear();
+        for (row, (placed, xs)) in layouts.into_iter().enumerate() {
+            let baseline = pad + row as f32 * ch as f32 + self.baseline;
+            for (_, unit, x, w) in &placed {
+                match unit {
+                    Unit::Empty => {}
+                    Unit::Fixed { text, cells, fg } => {
+                        let shaped = self.shape(text);
+                        let f = fit_with_stretch(shaped.advance_px, *cells, cw, 1.0);
+                        self.draw_glyphs(
+                            frame,
+                            &shaped,
+                            pad + x + f.offset_x,
+                            baseline,
+                            f.scale_x,
+                            *fg,
+                        );
                     }
-                    text.push_str(&next.text);
-                    width += next.width as usize;
+                    Unit::Khmer {
+                        text, fg, natural, ..
+                    } => {
+                        let shaped = self.shape(text);
+                        let scale = if *natural > 0.0 { w / natural } else { 1.0 };
+                        self.draw_glyphs(frame, &shaped, pad + x, baseline, scale, *fg);
+                    }
                 }
-                let (fg, _) = self.theme.cell_colors(&cell.attrs);
-                let x = (pad + start as i32 * cw) as f32;
-                self.draw_cluster(frame, &text, width.max(1), x, baseline, fg);
-                col = start + width.max(1);
             }
+            self.row_xs.push(xs);
         }
         frame.inverse = None;
     }
 
-    fn draw_cluster(
+    fn draw_glyphs(
         &mut self,
         frame: &mut Frame,
-        text: &str,
-        cells: usize,
+        shaped: &Shaped,
         x: f32,
         baseline: f32,
+        scale_x: f32,
         color: u32,
     ) {
-        let shaped = self.shape(text);
-        // Khmer may stretch a little to close gaps around narrow syllables;
-        // Latin stays at its natural (monospace) width.
-        let stretch = if shaped.face == KHMER { 1.15 } else { 1.0 };
-        let f = fit_with_stretch(shaped.advance_px, cells, self.cell_width as f32, stretch);
         let (font, px, upem) = if shaped.face == KHMER {
             (
                 &self.khmer_face.font,
@@ -385,14 +547,69 @@ impl Renderer {
             (&self.latin.font, self.latin_px, self.latin.units_per_em)
         };
         let to_px = px / upem;
-        let mut pen = x + f.offset_x;
+        let mut pen = x;
         for g in &shaped.glyphs {
-            let gx = pen + g.x_offset as f32 * to_px * f.scale_x;
+            let gx = pen + g.x_offset as f32 * to_px * scale_x;
             let gy = baseline - g.y_offset as f32 * to_px;
-            if let Some(mask) = self.glyphs.get(shaped.face, font, g.id, px, f.scale_x) {
+            if let Some(mask) = self.glyphs.get(shaped.face, font, g.id, px, scale_x) {
                 frame.blend_mask(mask, gx.round() as i32, gy.round() as i32, color);
             }
-            pen += g.x_advance as f32 * to_px * f.scale_x;
+            pen += g.x_advance as f32 * to_px * scale_x;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn khmer(cells: usize, natural: f32) -> Unit {
+        Unit::Khmer {
+            text: String::new(),
+            cells,
+            fg: 0,
+            natural,
+        }
+    }
+
+    fn fixed(cells: usize) -> Unit {
+        Unit::Fixed {
+            text: String::new(),
+            cells,
+            fg: 0,
+        }
+    }
+
+    #[test]
+    fn wide_word_pushes_following_text() {
+        // A 2-cell Khmer word that needs 30 px (3 cells of 10 px), then "a".
+        let units = vec![(0, khmer(2, 30.0)), (2, fixed(1)), (3, Unit::Empty)];
+        let (placed, xs, end) = Renderer::place(units, 4, 10.0, 1.0);
+        assert_eq!(placed[1].2, 30.0); // "a" starts after the word, not at 20
+        assert_eq!(end, 40.0);
+        assert_eq!(&xs[..3], &[0.0, 15.0, 30.0]);
+    }
+
+    #[test]
+    fn empty_cells_absorb_overflow() {
+        let units = vec![
+            (0, khmer(1, 25.0)),
+            (1, Unit::Empty),
+            (2, Unit::Empty),
+            (3, fixed(1)),
+        ];
+        let (placed, _, end) = Renderer::place(units, 4, 10.0, 1.0);
+        // The word overflows by 15 px; the two empty cells give that back,
+        // so the text after them stays on its grid position.
+        assert_eq!(placed[3].2, 30.0);
+        assert_eq!(end, 40.0);
+    }
+
+    #[test]
+    fn narrow_word_keeps_the_grid() {
+        let units = vec![(0, khmer(3, 12.0)), (3, fixed(1))];
+        let (placed, xs, _) = Renderer::place(units, 4, 10.0, 1.0);
+        assert_eq!(placed[1].2, 30.0);
+        assert_eq!(&xs[..4], &[0.0, 10.0, 20.0, 30.0]);
     }
 }

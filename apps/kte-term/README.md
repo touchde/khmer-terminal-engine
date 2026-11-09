@@ -22,8 +22,8 @@ How many cells each Khmer syllable takes. See [ADR 0005](../../docs/adr/0005-kte
 
 | `--model` | Use it when | Look |
 |-----------|-------------|------|
-| `legacy` **(default)** | Working in today's shells and editors (zsh, bash, vim). Matches the system `wcwidth()`, so line editing works. | Khmer is compressed; on macOS spacing vowels (ា ោ) get no cell of their own. |
-| `wide` | Reading Khmer output, or with apps that follow the KTE spec. | Natural Khmer typesetting (above). Line editing in today's shells breaks. |
+| `legacy` **(default)** | Working in today's shells and editors (zsh, bash, vim). Matches the system `wcwidth()`, so line editing works. | Natural Khmer; text after a Khmer word may shift right (see below). |
+| `wide` | Reading Khmer output, or with apps that follow the KTE spec. | Natural Khmer on an exact grid. Line editing in today's shells breaks. |
 | `compact` | Dense output. | One cell per consonant. |
 
 Legacy, macOS (Apple `wcwidth()`):
@@ -54,7 +54,7 @@ bash needs no setting.
 --model <MODEL>       legacy (default), wide, compact, legacy-glibc, legacy-apple
 --font-size <PX>      Latin font size in pixels [default: 15]
 --line-height <X>     Row height as a multiple of the font's line height [default: 1.7]
---khmer-fill <X>      How much of its cells a Khmer consonant fills, 0.5-1.0 [default: 1.0]
+--khmer-fill <X>      Khmer size in cells per consonant, 0.5-2.0 [default: 1.4 legacy/compact, 1.0 wide]
 --rows <N>, --cols <N>
 --snapshot <FILE>     Render to a PNG instead of opening a window
 --text <TEXT>         Text for --snapshot
@@ -77,7 +77,8 @@ Arrow keys, Home/End, Page Up/Down, Delete, F1–F12 and Ctrl/Alt combinations s
 
 - **Terminal model:** [`kte-terminal`](../../crates/kte-terminal): VT parsing, grid, cursor, selection.
 - **Rendering:** CPU rasterization with `tiny-skia`, shown with `softbuffer`. Each frame draws all backgrounds first, then all glyphs, so Khmer subscripts and above-vowels that extend into the next row are never covered or clipped.
-- **Khmer shaping:** each syllable is shaped with HarfBuzz ([`harfrust`](https://github.com/harfbuzz/harfrust)) and fitted into its cells. In the Legacy model, cells that belong to one syllable (split by `wcwidth()`) are joined again before shaping.
+- **Khmer shaping:** each Khmer word (consecutive Khmer cells of one color) is shaped once with HarfBuzz ([`harfrust`](https://github.com/harfbuzz/harfrust)) at one font size. Cells that `wcwidth()` split apart are joined again first.
+- **Grid in logic, flow in pixels:** the terminal grid stays exactly what the application expects, but a Khmer word is drawn at its natural width. If it needs more room than its cells, the text and cursor after it on that line move right, and cells the application never wrote give the room back. Only if a line would run past the window is its Khmer compressed, by one factor for the whole line. Fitting each syllable into its own cells instead made letters alternate between big and small.
 - **Shell:** [`portable-pty`](https://crates.io/crates/portable-pty) runs your login shell (ConPTY on Windows), with `TERM=xterm-256color` and a UTF-8 locale.
 
 ## Known limitations
@@ -87,4 +88,5 @@ Arrow keys, Home/End, Page Up/Down, Delete, F1–F12 and Ctrl/Alt combinations s
 - No bold/italic font faces (bold brightens the color instead).
 - No mouse reporting to applications.
 - Resizing does not re-wrap existing lines.
+- In Legacy mode, columns to the right of Khmer text (tables, vim status lines) can shift by the extra width the Khmer words need.
 - Windows: the Legacy model uses glibc rules; console applications' widths are not yet measured.

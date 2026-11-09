@@ -57,7 +57,7 @@ application ──bytes──▶ PTY ──▶ Terminal::feed ──▶ grid of 
 | Wide / Compact | A whole KTE cluster (a syllable with its subscripts) | Apps that follow the spec |
 | Legacy | One character wider than zero, plus the zero-width characters after it, exactly as `wcwidth()`-based apps see it | Today's shells and editors |
 
-In the Legacy model a syllable can span several cells (ស្ | តី). The renderer joins such cells back together (`kte_unicode::joins_next`) and shapes them as one syllable, so storage follows the application while rendering follows Khmer.
+In the Legacy model a syllable can span several cells (ស្ | តី). The renderer joins such cells back together (`kte_unicode::joins_next`), shapes each Khmer word as a whole, and lays each row out in pixels: a word keeps its natural width, and text after it moves right if needed. Storage follows the application; rendering follows Khmer.
 
 ## Testing layers
 
