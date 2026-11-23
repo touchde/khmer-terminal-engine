@@ -19,7 +19,7 @@ kte-shaper = { path = "crates/kte-shaper", version = "0.0.0" }
 kte-cell = { path = "crates/kte-cell", version = "0.0.0" }
 kte-terminal = { path = "crates/kte-terminal", version = "0.0.0" }
 kte-core = { path = "crates/kte-core", version = "0.0.0" }
-harfrust = "0.15"
+harfrust = "0.16"
 read-fonts = "0.46"
 serde_json = "1"
 unicode-segmentation = "1.13"
